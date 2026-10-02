@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>HattrickAI.V5</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="OfflineTests/**/*.cs" />
+    <Compile Include="../YEDEK/YEDEK/V1/webapp/HOEngine/PlayerData.cs" Link="Core/HOEngine/Legacy/PlayerData.cs" />
+    <Compile Include="../YEDEK/YEDEK/V1/webapp/HOEngine/PlayerRatingCalculator.cs" Link="Core/HOEngine/Legacy/PlayerRatingCalculator.cs" />
+    <Compile Include="../YEDEK/YEDEK/V1/webapp/HOEngine/RatingContributionTable.cs" Link="Core/HOEngine/Legacy/RatingContributionTable.cs" />
+    <Compile Include="../YEDEK/YEDEK/V1/webapp/HOEngine/LineupRatingEngine.cs" Link="Core/HOEngine/Legacy/LineupRatingEngine.cs" />
+    <Compile Include="../YEDEK/YEDEK/V1/webapp/HOEngine/TeamRatings.cs" Link="Core/HOEngine/Legacy/TeamRatings.cs" />
+  </ItemGroup>
+</Project>
