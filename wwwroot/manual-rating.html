@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#21804a"><title>HattrickAI V5 • Manuel Rating</title>
+<style>
+:root{--bg:#edf1ee;--card:#fff;--ink:#26332c;--muted:#737c76;--g:#21804a;--p:#2f8444;--p2:#287a3c;--line:#d9f1da88;--blue:#bce9ff;--gold:#f0c34f}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}.page{max-width:1100px;margin:auto;padding:12px}.top,.card{background:var(--card);border-radius:14px;box-shadow:0 2px 9px #0002}.top{padding:12px 15px;display:flex;align-items:center;gap:10px;margin-bottom:12px}.brand{font-size:21px;font-weight:900}.brand span{color:var(--g)}.crumb{flex:1;color:var(--muted);font-size:12px}.back,.btn,.move{cursor:pointer;font-weight:900;border-radius:9px}.back{border:1px solid #d1ddd5;background:#f6faf7;color:var(--g);padding:9px 12px}.grid{display:grid;grid-template-columns:minmax(340px,1fr) minmax(390px,1.05fr);gap:14px}.card{overflow:hidden;margin-bottom:14px}.head{padding:14px 16px;border-bottom:1px solid #edf1ee}.eyebrow{font-size:10px;font-weight:900;letter-spacing:.08em;color:#7c837f}.title{font-size:20px;font-weight:900;margin-top:3px}.sub{font-size:11px;color:var(--muted);line-height:1.35;margin-top:4px}.controls{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.controls label{display:block;font-size:10px;font-weight:900;color:#6f7872;margin-bottom:4px}.image-import{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;gap:6px 9px;align-items:center}.image-import>label{grid-column:1/-1;margin:0}.image-import .btn{font-size:11px}.image-status{font-size:10px;color:#68716c;line-height:1.3}.controls select,.controls input{width:100%;height:39px;border:1px solid #d4dfd7;border-radius:9px;padding:0 10px;background:#fff;color:var(--ink)}.player-list{padding:0 12px 12px;max-height:680px;overflow:auto}.player{border:1px solid #dfe7e1;border-radius:11px;padding:9px;margin-top:8px}.player-main{display:flex;gap:8px;align-items:center}.pname{font-weight:900;font-size:13px;flex:1}.pmeta{font-size:9px;color:#7b837d}.skills{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-top:7px}.skill{background:#f3f6f4;border-radius:5px;text-align:center;padding:4px 1px}.skill b{display:block;font-size:11px}.skill span{font-size:7px;color:#778079}.movegrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:7px}.move{border:1px solid #d0ddd4;background:#f8faf9;color:#2a6943;padding:5px 1px;font-size:8px}.pitch-wrap{padding:0 12px 12px}.pitch{position:relative;aspect-ratio:1.03/1;background:linear-gradient(90deg,var(--p),var(--p2));border-radius:10px;overflow:hidden}.pitch:before{content:"";position:absolute;inset:15px;border:2px solid var(--line)}.mid{position:absolute;left:15px;right:15px;top:50%;border-top:2px solid var(--line)}.circle{position:absolute;width:30%;aspect-ratio:1;border:2px solid var(--line);border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)}.box{position:absolute;width:42%;height:22%;left:29%;border:2px solid var(--line)}.box.t{top:15px}.box.b{bottom:15px}.goal{position:absolute;width:17%;height:7%;left:41.5%;border:2px solid var(--line)}.goal.t{top:0}.goal.b{bottom:0}.slots{position:absolute;inset:0;z-index:2}.pslot{position:absolute;width:15.8%;height:13%;border:2px solid #d9f1da90;border-radius:9px;background:#23733855;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;cursor:pointer}.pslot.filled{background:#78bde04a;border-color:var(--blue);box-shadow:0 2px 5px #0004}.pslot.selected{border-color:#fff;box-shadow:0 0 0 2px var(--gold),0 3px 8px #0005}.pslot small{display:block;font-size:8px;opacity:.7}.pslot b{display:block;font-size:clamp(8px,1.5vw,12px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gk{left:42%;top:4%}.dl{left:1.5%;top:26.5%}.dcl{left:21%;top:26.5%}.dc{left:42%;top:26.5%}.dcr{left:63%;top:26.5%}.dr{left:83.5%;top:26.5%}.wl{left:1.5%;top:49%}.iml{left:21%;top:49%}.imc{left:42%;top:49%}.imr{left:63%;top:49%}.wr{left:83.5%;top:49%}.fwl{left:21%;top:72%}.fwc{left:42%;top:72%}.fwr{left:63%;top:72%}.board{position:absolute;right:7px;top:7px;width:31%;z-index:4;color:#fff;text-shadow:0 1px 3px #0008;font-weight:900;pointer-events:none}.rrow{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}.rrow span,.rmid span{font-size:clamp(12px,2.2vw,20px)}.rmid{text-align:center;margin:3px}.rlabel{font-size:7px;text-align:right;opacity:.7}.bottom{padding:12px 14px;display:flex;gap:8px;align-items:center}.count{flex:1;color:var(--muted);font-size:11px}.btn{border:0;padding:10px 13px;background:var(--g);color:#fff}.btn.secondary{background:#f1f5f2;color:#25673f;border:1px solid #cfdcd3}.btn:disabled{opacity:.45}.result{padding:12px 14px}.ratings{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.rating{background:#f3f6f4;border-radius:9px;padding:8px 3px;text-align:center}.rating b{display:block;font-size:16px}.rating span{font-size:8px;color:#717a74}.status{padding:9px 14px;color:#68716c;font-size:10px;border-top:1px solid #edf1ee}.json-action{padding:0 14px 13px;display:flex;align-items:center;gap:9px}.json-btn{border:1px solid #cddbd1;background:#f4f8f5;color:#20663b;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:900;letter-spacing:.03em;cursor:pointer}.json-btn:disabled{opacity:.45;cursor:not-allowed}.json-note{color:#7a827d;font-size:10px;line-height:1.35}.error{display:none;margin:0 14px 12px;padding:9px;border-radius:9px;background:#fff1ef;border:1px solid #e1aaa2;color:#963e34;font-size:11px;white-space:pre-wrap}.ocr-debug{margin:0 14px 12px;border:1px solid #d9e5dd;border-radius:10px;background:#f7faf8}.ocr-preview{margin:0 14px 12px;padding:10px;border:1px solid #d9e5dd;border-radius:10px;background:#f7faf8}.ocr-preview-title{font-size:11px;font-weight:900;color:#20663b;margin-bottom:7px}.ocr-preview-wrap{position:relative;width:100%;overflow:auto;background:#111;border-radius:8px}.ocr-preview-wrap img{display:block;width:100%;height:auto}.ocr-preview-wrap canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.ocr-preview-note{font-size:9px;color:#69736d;margin-top:6px;line-height:1.4}.ocr-debug summary{padding:9px 11px;color:#20663b;font-size:11px;font-weight:900;cursor:pointer}.ocr-debug-body{padding:0 9px 9px}.ocr-meta{font-size:9px;color:#69736d;line-height:1.45;padding:4px 2px 8px}.ocr-slot{border-top:1px solid #e3ebe6;padding:7px 2px;font-size:9px;line-height:1.45}.ocr-slot b{color:#26312b}.ocr-slot .ok{color:#237b45;font-weight:900}.ocr-slot .bad{color:#a3473d;font-weight:900}.ocr-slot code{font-family:monospace;word-break:break-word;color:#46534c}.empty{text-align:center;padding:18px;color:#78817b;font-size:12px}@media(max-width:800px){.grid{grid-template-columns:1fr}.player-list{max-height:none}.ratings{grid-template-columns:repeat(4,1fr)}}@media(max-width:470px){.page{padding:8px}.controls{grid-template-columns:1fr}.movegrid{grid-template-columns:repeat(7,1fr)}.skills{grid-template-columns:repeat(9,1fr)}.pitch-wrap{padding:0 8px 8px}.pslot{border-width:1.5px}.pslot small{font-size:6px}.pslot b{font-size:8px}.board{width:38%}}
+</style></head>
+<body><main class="page">
+<header class="top"><div class="brand">Hattrick<span>AI</span></div><div class="crumb">V5 • Manuel Rating Motoru Testi</div><button class="back" onclick="location.href='/'">← Ana sayfa</button></header>
+<div class="grid"><section><article class="card"><div class="head"><div class="eyebrow">OYUNCU HAVUZU</div><div class="title">Oyuncu seç</div><div class="sub">Üstten özelliği seç; en yüksek oyuncular üstte. Her oyuncunun altında 14 mevkiye taşıma düğmeleri var.</div></div>
+<div class="controls"><div class="image-import"><label>RESİMDEN KADRO</label><button class="btn secondary" id="imageImport" type="button">📷 RESİM YÜKLE</button><input id="imageFile" type="file" accept="image/*" hidden><span id="imageStatus" class="image-status">Ekran görüntüsündeki oyuncuları otomatik mevkilere yerleştirir.</span></div><div><label>SIRALAMA</label><select id="sort"><option value="defending">Defans</option><option value="playmaking">Oyunkuruculuk</option><option value="passing">Pas</option><option value="winger">Kanat</option><option value="scoring">Golcülük</option><option value="keeper">Kalecilik</option><option value="form">Form</option><option value="stamina">Dayanıklılık</option><option value="experience">Tecrübe</option></select></div><div><label>ARAMA</label><input id="search" placeholder="Oyuncu adı ara…"></div></div>
+<div class="error" id="error"></div><details class="ocr-debug" id="ocrDebug"><summary>OCR TEŞHİSİ — 14 SABİT BÖLGE</summary><div class="ocr-debug-body" id="ocrDebugBody"><div class="ocr-meta">Resim yüklendiğinde her mevkinin gerçek crop koordinatı, ham OCR çıktısı, CHPP adayları ve kabul/red nedeni burada görünür.</div></div></details><div class="ocr-preview" id="ocrPreview" style="display:none"><div class="ocr-preview-title">OCR TARAMA ALANI</div><div class="ocr-preview-wrap"><img id="ocrPreviewImage" alt="OCR önizleme"><canvas id="ocrPreviewCanvas"></canvas></div><div class="ocr-preview-note">Kırmızı kutular: OCR'ın aradığı mevki bölgeleri. Yeşil kutu: kabul edilen oyuncu. Kutular orijinal ekran görüntüsü koordinatlarına göre çizilir.</div></div><div class="json-action"><button class="json-btn" id="downloadOcrJson" type="button" disabled>OCR JSON İNDİR</button><span class="json-note">Son OCR keşfinin ham metinlerini, crop koordinatlarını, adaylarını ve formasyon bilgisini indirir.</span></div><div class="player-list" id="players"><div class="empty">CHPP oyuncuları yükleniyor…</div></div></article></section>
+<section><article class="card"><div class="head"><div class="eyebrow">V5 MANUEL KADRO</div><div class="title" id="teamTitle">Takım kadrosu</div><div class="sub">1 oyuncu bile seçsen hesap yapılır. Oyuncu başka mevkiye taşınırsa önceki mevki boşalır.</div></div>
+<div class="pitch-wrap"><div class="pitch" id="pitch"><div class="mid"></div><div class="circle"></div><div class="box t"></div><div class="box b"></div><div class="goal t"></div><div class="goal b"></div><div class="slots"></div><div class="board" id="board"></div></div></div>
+<div class="bottom"><div class="count" id="count">0 / 11 oyuncu seçildi</div><button class="btn secondary" id="clear">TEMİZLE</button><button class="btn" id="calculate" disabled>V5 HESAPLA</button></div>
+<div class="result" id="result"></div><div class="json-action"><button class="json-btn" id="downloadJson" type="button" disabled>HESAP JSON İNDİR</button><span class="json-note">Seçilen oyuncular, 14 mevki yerleşimi, V5 hesap girdileri ve son hesap sonucu birlikte indirilir.</span></div><div class="status" id="status">Oyuncu verisi bekleniyor…</div></article></section></div></main>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script>
+const SLOTS=[['GK','gk','GK'],['WB-L','dl','WB-L'],['DEF-CL','dcl','DEF-L'],['DEF-C','dc','DEF-C'],['DEF-CR','dcr','DEF-R'],['WB-R','dr','WB-R'],['W-L','wl','W-L'],['IM-L','iml','IM-L'],['IM-C','imc','IM-C'],['IM-R','imr','IM-R'],['W-R','wr','W-R'],['FW-L','fwl','FW-L'],['FW-C','fwc','FW-C'],['FW-R','fwr','FW-R']];
+const SKILLS=[['keeper','KL'],['defending','DEF'],['playmaking','PM'],['passing','PAS'],['winger','KAN'],['scoring','GOL'],['form','FORM'],['stamina','STA'],['experience','EXP']];
+let players=[],selected=new Map(),activeSlot=null,lastRating=null,lastCalculation=null,lastOcrDiagnostics=null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const fmt=x=>Number(x||0).toFixed(2).replace(/\.00$/,'');
+
+const OCR_SLOT_POINTS={
+  'GK':[.50,.18],
+  'WB-L':[.08,.46],'DEF-CL':[.29,.46],'DEF-C':[.50,.46],'DEF-CR':[.71,.46],'WB-R':[.92,.46],
+  'W-L':[.08,.71],'IM-L':[.29,.71],'IM-C':[.50,.71],'IM-R':[.71,.71],'W-R':[.92,.71],
+  'FW-L':[.29,.95],'FW-C':[.50,.95],'FW-R':[.71,.95]
+};
+const normText=s=>String(s||'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/[^a-z0-9]+/g,' ').trim();
+function editDistance(a,b){const prev=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const cur=[i];for(let j=1;j<=b.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));for(let j=0;j<prev.length;j++)prev[j]=cur[j]}return prev[b.length]}
+function tokenSimilarity(a,b){
+  a=normText(a); b=normText(b);
+  if(!a||!b)return 0;
+  if(a===b)return 1;
+  const d=editDistance(a,b), max=Math.max(a.length,b.length);
+  return max ? Math.max(0,1-d/max) : 0;
+}
+function nameMatchScore(ocr,player){
+  const a=normText(ocr),b=normText(player.name);
+  if(!a||!b)return 0;
+  const at=a.split(/\s+/).filter(Boolean),bt=b.split(/\s+/).filter(Boolean);
+  if(!at.length||!bt.length)return 0;
+
+  const bf=bt[0],bl=bt[bt.length-1];
+
+  // Tesseract bazen ilk adı tamamen kaybediyor: "Bultot." -> "Bultot".
+  // Soyad tek başına yeterince güçlü ve ayırt ediciyse kabul edilir.
+  if(at.length===1){
+    const t=at[0];
+    const d=editDistance(t,bl);
+    const exact=t===bl;
+    const similarity=1-d/Math.max(t.length,bl.length);
+    const prefix=t.length>=4 && bl.length>=4 &&
+      (t.startsWith(bl)||bl.startsWith(t))
+      ? Math.min(t.length,bl.length)/Math.max(t.length,bl.length) : 0;
+    if(exact)return .97;
+    if(similarity>=.90)return .91;
+    if(prefix>=.80)return .86;
+    return 0;
+  }
+
+  const af=at[0],al=at[at.length-1];
+
+  // OCR bazen soyadı iki/üç parçaya böler: "Pesa ovo" -> "Pesalovo".
+  // İlk ad/baş harfi dışındaki tüm tokenları birleştirip ikinci bir soyad
+  // adayı oluşturuyoruz. Koordinatlara dokunmuyoruz; sadece isim eşleştirmeyi
+  // daha toleranslı hale getiriyoruz.
+  const tail=at.length>1?at.slice(1).join(''):'';
+  const surnameCandidates=[al,tail].filter((v,i,self)=>v&&self.indexOf(v)===i);
+
+  const lastScores=surnameCandidates.map(v=>({
+    value:v,
+    score:1-editDistance(v,bl)/Math.max(v.length,bl.length)
+  }));
+  const bestLast=lastScores.sort((x,y)=>y.score-x.score)[0]||{value:al,score:0};
+  const lastScore=bestLast.score;
+  const firstScore=1-editDistance(af,bf)/Math.max(af.length,bf.length);
+  const initial=af.length===1&&af[0]===bf[0];
+
+  // Tesseract mobil ekranlarda soyadının sonuna fazladan karakter ekleyebiliyor:
+  // "Nocoń" -> "Noconi". Kısa soyadlarda da tek karakter OCR hatasına izin ver.
+  const prefix=Math.min(bestLast.value.length,bl.length)>=3 &&
+    (bl.startsWith(bestLast.value)||bestLast.value.startsWith(bl))
+      ? Math.min(bestLast.value.length,bl.length)/Math.max(bestLast.value.length,bl.length) : 0;
+
+  if(bestLast.value===bl&&initial)return .99;
+  if(bestLast.value===bl&&af.length<=2)return .96;
+  // "A Taki" -> "Abeiku Takyi", "D Noconi" -> "Dawid Nocoń".
+  if(initial&&lastScore>=.72&&Math.min(bestLast.value.length,bl.length)>=7)return .93;
+  if(initial&&lastScore>=.78&&Math.min(bestLast.value.length,bl.length)>=4)return .93;
+  // 5-6+ harfli soyadlarda tek OCR karakter hatasına izin ver:
+  // örn. "S. Saviet" -> "Şaban Savlet". Whitelist yok; kural tüm CHPP
+  // oyuncularına genel olarak uygulanır.
+  if(initial&&lastScore>=.80&&Math.min(bestLast.value.length,bl.length)>=6)return .88;
+  // Uzun soyadlarda Tesseract harfleri bozup/birleştirerek daha düşük edit
+  // skoru üretebiliyor: "G u stay ssor" -> "gustayssor" / "Gustavsson".
+  // Baş harfi + uzun soyad + yeterli benzerlik varsa kabul ediyoruz.
+  if(initial&&lastScore>=.70&&Math.min(bestLast.value.length,bl.length)>=8)return .90;
+  if(initial&&prefix>=.70)return .90;
+  // OCR ilk adı bozduğunda, güçlü ve ayırt edici soyadı da tek başına
+  // aday olabilir. Bu eşik genel tutuluyor; CHPP adayları zaten sıralanıyor.
+  if(lastScore>=.86&&bestLast.value.length>=5)return .87;
+  if(lastScore>=.90&&firstScore>=.45)return .88;
+  if(a===b)return 1;
+  return 0;
+}
+function bestOcrPlayer(text,blocked=new Set()){
+  let best=null,score=0;
+  for(const p of players){
+    if(blocked.has(p.id))continue;
+    const s=nameMatchScore(text,p);
+    if(s>score){score=s;best=p;}
+  }
+  return best&&score>=.84?{player:best,score}:null;
+}
+function imageVariant(source,mode,scale=2){
+  const w=Math.max(1,Math.round(source.width*scale)),h=Math.max(1,Math.round(source.height*scale));
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0,w,h);
+  if(mode==='color')return c;
+  const img=ctx.getImageData(0,0,w,h),d=img.data;
+  for(let i=0;i<d.length;i+=4){
+    const y=.299*d[i]+.587*d[i+1]+.114*d[i+2];
+    let v=y;
+    if(mode==='contrast')v=Math.max(0,Math.min(255,(y-128)*1.8+128));
+    if(mode==='threshold')v=y>150?255:0;
+    d[i]=d[i+1]=d[i+2]=v;
+  }
+  ctx.putImageData(img,0,0);return c;
+}
+function detectPitchBounds(canvas){
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  const w=canvas.width,h=canvas.height,data=ctx.getImageData(0,0,w,h).data;
+  // Oyuncular ve saha çizgileri nedeniyle bazı satırlarda yeşil oranı düşer.
+  // Kısa boşlukları köprüleyerek sahanın üst bölümünü kesmiyoruz.
+  const green=(x,y)=>{
+    const i=(y*w+x)*4,r=data[i],g=data[i+1],b=data[i+2];
+    return g>55 && g>r*1.22 && g>b*1.12 && (g-r)>18;
+  };
+  const rowScore=new Float32Array(h);
+  for(let y=0;y<h;y++){
+    let hit=0;
+    for(let x=0;x<w;x+=2)if(green(x,y))hit++;
+    rowScore[y]=hit/Math.ceil(w/2);
+  }
+  const threshold=.45,maxGap=20;
+  let best={start:0,end:0,len:0},run=-1,gap=0;
+  const finish=end=>{
+    if(run<0)return;
+    const len=end-run;
+    if(len>best.len)best={start:run,end,len};
+    run=-1;gap=0;
+  };
+  for(let y=0;y<h;y++){
+    if(rowScore[y]>=threshold){
+      if(run<0)run=y;
+      gap=0;
+    }else if(run>=0){
+      gap++;
+      if(gap>maxGap)finish(y-gap);
+    }
+  }
+  if(run>=0)finish(h);
+  if(best.len<300)return{x:0,y:Math.round(h*.35),width:w,height:Math.round(h*.55)};
+  const top=best.start,bottom=best.end;
+  const colScore=new Float32Array(w);
+  for(let x=0;x<w;x++){
+    let hit=0;
+    for(let y=top;y<bottom;y+=2)if(green(x,y))hit++;
+    colScore[x]=hit/Math.ceil((bottom-top)/2);
+  }
+  let left=0,right=w;
+  while(left<w&&colScore[left]<.45)left++;
+  while(right>left&&colScore[right-1]<.45)right--;
+  const padX=Math.round((right-left)*.015),padY=Math.round((bottom-top)*.015);
+  left=Math.max(0,left-padX);right=Math.min(w,right+padX);
+  return{x:left,y:Math.max(0,top-padY),width:right-left,height:Math.min(h,bottom+padY)-Math.max(0,top-padY)};
+}
+function nearestSlot(nx,ny,used){
+  let best=null,dist=Infinity;
+  for(const [slot,[x,y]] of Object.entries(OCR_SLOT_POINTS)){
+    if(used.has(slot))continue;
+    const d=((nx-x)/.75)**2+((ny-y))**2;
+    if(d<dist){dist=d;best=slot;}
+  }
+  return best;
+}
+// Kullanıcının işaretlediği referans görüntüdeki gerçek piksel kutuları.
+// Referans saha görüntüsü yaklaşık 900x850 px'tir. Gerçek yüklenen görüntüde
+// saha crop'u farklı çözünürlükteyse X/Y eksenleri ayrı ayrı ölçeklenir.
+// Böylece OCR her zaman aynı 14 isim kutusunu okur.
+const OCR_REFERENCE_SIZE={width:900,height:850};
+const OCR_NAME_BOXES={
+  'GK':    {x1:381,y1:173,x2:509,y2:214},
+  'WB-L':  {x1:34, y1:382,x2:175,y2:442},
+  'WB-R':  {x1:700,y1:375,x2:895,y2:430},
+  'DEF-CL':{x1:193,y1:381,x2:340,y2:423},
+  'DEF-C': {x1:365,y1:381,x2:509,y2:414},
+  'DEF-CR':{x1:544,y1:374,x2:696,y2:424},
+  'W-L':   {x1:19, y1:586,x2:185,y2:648},
+  'IM-L':  {x1:183,y1:584,x2:348,y2:638},
+  'IM-C':  {x1:358,y1:584,x2:521,y2:638},
+  'IM-R':  {x1:541,y1:584,x2:692,y2:638},
+  'W-R':   {x1:716,y1:584,x2:874,y2:638},
+  'FW-L':  {x1:197,y1:805,x2:345,y2:850},
+  'FW-C':  {x1:355,y1:805,x2:523,y2:850},
+  'FW-R':  {x1:535,y1:801,x2:705,y2:850}
+};
+
+function formationSlotBoxes(defenders,midfielders,forwards){
+  const defBase=['WB-L','DEF-CL','DEF-C','DEF-CR','WB-R'];
+  const midBase=['W-L','IM-L','IM-C','IM-R','W-R'];
+  const fwBase=['FW-L','FW-C','FW-R'];
+
+  const pick=(base,count)=>{
+    if(count>=base.length)return base.slice();
+    if(count===1)return [base[Math.floor(base.length/2)]];
+    if(count===2)return [base[0],base[base.length-1]];
+    if(count===3)return [base[0],base[Math.floor(base.length/2)],base[base.length-1]];
+    if(count===4)return [base[0],base[1],base[3],base[4]];
+    return base.slice();
+  };
+
+  const result={};
+  pick(defBase,defenders).forEach((slot)=>{ result[slot]=OCR_NAME_BOXES[slot]; });
+  pick(midBase,midfielders).forEach((slot)=>{ result[slot]=OCR_NAME_BOXES[slot]; });
+  pick(fwBase,forwards).forEach((slot)=>{ result[slot]=OCR_NAME_BOXES[slot]; });
+  result.GK=OCR_NAME_BOXES.GK;
+
+  // 3-4-3'te savunma oyuncuları fiziksel olarak sol/merkez/sağ
+  // kolonlara oturur. Eski 5'li savunma kutuları özellikle sağdaki
+  // uzun isimleri kesebiliyor. Eski matrisi bozmadan yalnızca 3'lü
+  // savunma tespit edildiğinde bu üç kutuyu merkezleyip genişletiyoruz.
+  if(defenders===3){
+    // 3-4-3 referansında isimlerin gerçek yatay merkezleri:
+    // sol savunma ~%11, merkez ~%50, sağ savunma ~%88.
+    // Özellikle sol/sağ kutuyu saha kenarına taşırmadan oyuncu isim etiketini
+    // hedefliyoruz; mevcut 5'li savunma matrisi diğer formasyonlarda aynen kalır.
+    result['WB-L']={x1:35,y1:382,x2:175,y2:442};
+    result['DEF-C']={x1:350,y1:382,x2:540,y2:430};
+    result['WB-R']={x1:700,y1:375,x2:895,y2:430};
+  }
+
+  return result;
+}
+
+async function detectFormation(field,worker){
+  try{
+    await worker.setParameters({tessedit_pageseg_mode:'11'});
+    const out=await worker.recognize(field,{
+      rectangle:{
+        left:0,
+        top:0,
+        width:Math.round(field.width*.45),
+        height:Math.round(field.height*.22)
+      }
+    });
+    const text=String(out?.data?.text||'').replace(/\n/g,' ');
+    const m=text.match(/([1-5])\s*[-–—]\s*([1-5])\s*[-–—]\s*([1-3])/);
+    await worker.setParameters({tessedit_pageseg_mode:'7',thresholding_method:'2'});
+    return m?{text,defenders:+m[1],midfielders:+m[2],forwards:+m[3]}:{text,defenders:null,midfielders:null,forwards:null};
+  }catch{
+    await worker.setParameters({tessedit_pageseg_mode:'7',thresholding_method:'2'}).catch(()=>{});
+    return {text:'',defenders:null,midfielders:null,forwards:null};
+  }
+}
+
+function buildFixedNameCrop(field,slot,scale=4,boxOverride=null){
+  const box=boxOverride||OCR_NAME_BOXES[slot];
+  if(!box)throw new Error('OCR koordinatı bulunamadı: '+slot);
+
+  const sx=Math.round(box.x1/OCR_REFERENCE_SIZE.width*field.width);
+  const sy=Math.round(box.y1/OCR_REFERENCE_SIZE.height*field.height);
+  const ex=Math.round(box.x2/OCR_REFERENCE_SIZE.width*field.width);
+  const ey=Math.round(box.y2/OCR_REFERENCE_SIZE.height*field.height);
+  const x=Math.max(0,Math.min(field.width-1,sx));
+  const y=Math.max(0,Math.min(field.height-1,sy));
+  const right=Math.max(x+1,Math.min(field.width,ex));
+  const bottom=Math.max(y+1,Math.min(field.height,ey));
+  const sw=right-x,sh=bottom-y;
+
+  const c=document.createElement('canvas');
+  c.width=Math.max(1,sw*scale);c.height=Math.max(1,sh*scale);
+  const ctx=c.getContext('2d',{willReadFrequently:true});
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(field,x,y,sw,sh,0,0,c.width,c.height);
+
+  const src=ctx.getImageData(0,0,c.width,c.height);
+  const gray=new Uint8ClampedArray(src.data.length);
+  for(let i=0;i<src.data.length;i+=4){
+    const yv=.299*src.data[i]+.587*src.data[i+1]+.114*src.data[i+2];
+    gray[i]=gray[i+1]=gray[i+2]=yv;gray[i+3]=255;
+  }
+  const variants=[];
+  const make=(name,mode)=>{
+    const v=document.createElement('canvas');v.width=c.width;v.height=c.height;
+    const vx=v.getContext('2d',{willReadFrequently:true});
+    if(mode==='color')vx.drawImage(c,0,0);
+    else{
+      const d=new ImageData(new Uint8ClampedArray(gray),c.width,c.height);
+      for(let i=0;i<d.data.length;i+=4){
+        let q=d.data[i];
+        if(mode==='contrast') q=Math.max(0,Math.min(255,(q-70)*2.35));
+        else if(mode==='white') q=q>135?255:0;
+        else if(mode==='white2') q=q>105?255:0;
+        d.data[i]=d.data[i+1]=d.data[i+2]=q;
+      }
+      vx.putImageData(d,0,0);
+    }
+    variants.push({name,canvas:v});
+  };
+  make('renkli','color');
+  make('kontrast','contrast');
+  make('beyaz135','white');
+  make('beyaz105','white2');
+  const whiteText=document.createElement('canvas');
+  whiteText.width=c.width;whiteText.height=c.height;
+  const wx=whiteText.getContext('2d',{willReadFrequently:true});
+  const d=wx.createImageData(c.width,c.height),sd=src.data;
+  for(let i=0;i<sd.length;i+=4){
+    const r=sd[i],g=sd[i+1],b=sd[i+2],bright=(r+g+b)/3;
+    const neutral=Math.max(r,g,b)-Math.min(r,g,b);
+    const isText=bright>145&&neutral<70;
+    const q=isText?0:255;
+    d.data[i]=d.data[i+1]=d.data[i+2]=q;d.data[i+3]=255;
+  }
+  wx.putImageData(d,0,0);
+  variants.push({name:'beyaz-maske',canvas:whiteText});
+  return {variants,x,y,width:sw,height:sh};
+}
+
+function buildVerticalFallbackCrops(field,slot,box,scale=4){
+  const base=buildFixedNameCrop(field,slot,scale,box);
+  const shifts=[-70,70];
+  const crops=[];
+  for(const shift of shifts){
+    const ref={...box,y1:box.y1+shift,y2:box.y2+shift};
+    if(ref.y2<=0||ref.y1>=OCR_REFERENCE_SIZE.height)continue;
+    crops.push(buildFixedNameCrop(field,slot,scale,ref));
+  }
+  return crops;
+}
+
+function rankOcrPlayers(text,limit=5){
+  const ranked=[];
+  for(const p of players){
+    const score=nameMatchScore(text,p);
+    if(score>0)ranked.push({player:p,score});
+  }
+  return ranked.sort((a,b)=>b.score-a.score).slice(0,limit);
+}
+function ocrCandidatesFromResult(out){
+  const values=[];
+  const full=String(out?.data?.text||'').trim().replace(/\s+/g,' ');
+  if(full)values.push(full);
+  for(const line of (out?.data?.lines||[])){
+    const t=String(line.text||'').trim().replace(/\s+/g,' ');
+    if(t)values.push(t);
+  }
+  const words=(out?.data?.words||[]).map(w=>String(w.text||'').trim()).filter(Boolean);
+  if(words.length)values.push(words.join(' '));
+  return [...new Set(values)].filter(x=>x.length>=2&&x.length<=42);
+}
+
+function renderOcrPreview(image,sourceCanvas,bounds,layoutBoxes,diagnostics){
+  const wrap=document.getElementById('ocrPreview');
+  const img=document.getElementById('ocrPreviewImage');
+  const canvas=document.getElementById('ocrPreviewCanvas');
+  if(!wrap||!img||!canvas)return;
+  const url=sourceCanvas.toDataURL('image/jpeg',0.92);
+  img.onload=()=>{
+    canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const sx=img.naturalWidth/sourceCanvas.width, sy=img.naturalHeight/sourceCanvas.height;
+    const fx=bounds.x*sx, fy=bounds.y*sy, fw=bounds.width*sx, fh=bounds.height*sy;
+    const scaleX=fw/OCR_REFERENCE_SIZE.width, scaleY=fh/OCR_REFERENCE_SIZE.height;
+    for(const [slot,box] of Object.entries(layoutBoxes)){
+      const x=fx+box.x1*scaleX, y=fy+box.y1*scaleY;
+      const w=(box.x2-box.x1)*scaleX, h=(box.y2-box.y1)*scaleY;
+      const row=diagnostics.find(r=>r.slot===slot);
+      ctx.strokeStyle=row?.accepted?'#00ff66':'#ff4b4b';
+      ctx.lineWidth=Math.max(3,canvas.width/500);
+      ctx.strokeRect(x,y,w,h);
+      ctx.fillStyle=row?.accepted?'#00ff66':'#ff4b4b';
+      ctx.font='bold '+Math.max(18,canvas.width/45)+'px Arial';
+      ctx.fillText(slot,x+4,y+Math.max(20,canvas.width/45));
+    }
+    wrap.style.display='block';
+  };
+  img.src=url;
+}
+function renderOcrDiagnostics(meta,rows){
+  const body=document.getElementById('ocrDebugBody');
+  if(!body)return;
+  body.innerHTML='<div class="ocr-meta"><b>Kaynak:</b> '+esc(meta.source)+
+    '<br><b>Resim:</b> '+meta.imageWidth+'×'+meta.imageHeight+
+    '<br><b>Ölçek:</b> '+meta.scale.toFixed(3)+
+    '<br><b>Yeşil saha crop:</b> x='+meta.fieldX+', y='+meta.fieldY+', w='+meta.fieldWidth+', h='+meta.fieldHeight+
+    '<br><b>Formasyon:</b> '+esc(meta.formation||'okunamadı')+
+    (meta.formationOcr?'<br><b>Formasyon OCR:</b> '+esc(meta.formationOcr): '')+
+    '<br><b>Sonuç:</b> '+rows.filter(x=>x.accepted).length+' kabul / '+rows.filter(x=>x.active!==false).length+' aktif bölge</div>'+
+    rows.map(r=>{
+      const raw=r.raw.length?r.raw.map(x=>'<code>'+esc(x)+'</code>').join(' | '):'<span class="bad">OCR metni yok</span>';
+      const tops=r.top.length?r.top.map(x=>esc(x.player.name)+' ('+x.score.toFixed(2)+')').join(' · '):'eşleşme yok';
+      const state=r.accepted
+        ? '<span class="ok">KABUL → '+esc(r.player.name)+'</span>'
+        : '<span class="bad">'+esc(r.reason)+'</span>';
+      return '<div class="ocr-slot"><b>'+esc(r.slot)+'</b> — crop x='+r.x+', y='+r.y+', w='+r.width+', h='+r.height+
+        '<br>Ham OCR: '+raw+
+        '<br>CHPP adayları: '+tops+
+        '<br>'+state+'</div>';
+    }).join('');
+  console.groupCollapsed('[HattrickAI OCR] 14 sabit bölge');
+  console.log(meta);
+  console.table(rows.map(r=>({
+    slot:r.slot,x:r.x,y:r.y,w:r.width,h:r.height,
+    raw:r.raw.join(' | '),
+    best:r.top[0]?.player?.name||'',
+    score:r.top[0]?.score||0,
+    accepted:r.accepted,
+    reason:r.reason
+  })));
+  console.groupEnd();
+}
+
+async function importLineupFromImage(file){
+  const status=document.getElementById('imageStatus'),err=document.getElementById('error');
+  if(!file)return;
+  if(!players.length){status.textContent='Önce CHPP oyuncu listesinin yüklenmesini bekle.';return;}
+  err.style.display='none'; status.textContent='Formasyon ve mevki bölgeleri okunuyor…';
+  const img=new Image(),url=URL.createObjectURL(file);
+  try{
+    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url});
+    const source=document.createElement('canvas'),scale=Math.min(1.5,1800/img.naturalWidth);
+    source.width=Math.max(1,Math.round(img.naturalWidth*scale));
+    source.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    source.getContext('2d').drawImage(img,0,0,source.width,source.height);
+
+    const bounds=detectPitchBounds(source);
+    const field=document.createElement('canvas');
+    field.width=Math.max(1,Math.round(bounds.width));
+    field.height=Math.max(1,Math.round(bounds.height));
+    field.getContext('2d').drawImage(source,bounds.x,bounds.y,bounds.width,bounds.height,0,0,field.width,field.height);
+
+    const worker=await Tesseract.createWorker('tur+eng');
+    await worker.setParameters({
+      tessedit_pageseg_mode:'7',
+      preserve_interword_spaces:'1',
+      user_defined_dpi:'300',
+      thresholding_method:'2'
+    });
+
+    // Eski 2-5-3 koordinatları korunuyor. Sadece formasyon okunursa,
+    // aynı koordinat matrisi o formasyondaki gerçek mevkilere yeniden eşleniyor.
+    const formation=await detectFormation(field,worker);
+    const layoutBoxes=(formation.defenders&&formation.midfielders&&formation.forwards)
+      ? formationSlotBoxes(formation.defenders,formation.midfielders,formation.forwards)
+      : OCR_NAME_BOXES;
+
+    const slotMatches=[],diagnostics=[];
+    const activeSlots=new Set(Object.keys(layoutBoxes));
+    for(const [slot] of SLOTS){
+      if(!activeSlots.has(slot)){
+        diagnostics.push({
+          slot,x:0,y:0,width:0,height:0,raw:[],top:[],accepted:false,player:null,
+          active:false,reason:'Formasyonda aktif değil'
+        });
+        continue;
+      }
+
+      const info=buildFixedNameCrop(field,slot,4,layoutBoxes[slot]);
+      const rawSet=[],ranked=[];
+      const runVariants=async (cropInfo,prefix='')=>{
+        const variants=cropInfo.variants.filter(v=>['renkli','kontrast','beyaz135','beyaz105','beyaz-maske'].includes(v.name));
+        for(const variant of variants){
+          if(ranked.some(x=>x.score>=.84))break;
+          const out=await worker.recognize(variant.canvas);
+          for(const text of ocrCandidatesFromResult(out)){
+            rawSet.push(prefix+variant.name+': '+text);
+            for(const x of rankOcrPlayers(text,5))
+              ranked.push({text,...x,variant:variant.name});
+          }
+        }
+
+        if(!ranked.some(x=>x.score>=.84)){
+          const base=variants[0]?.canvas;
+          if(base){
+            for(const start of [.30,.42]){
+              if(ranked.some(x=>x.score>=.84))break;
+              const band=document.createElement('canvas');
+              band.width=base.width;
+              band.height=Math.max(1,Math.round(base.height*(1-start)));
+              const bx=band.getContext('2d');
+              for(const variant of variants){
+                if(ranked.some(x=>x.score>=.84))break;
+                bx.clearRect(0,0,band.width,band.height);
+                bx.drawImage(variant.canvas,0,Math.round(base.height*start),band.width,band.height,0,0,band.width,band.height);
+                const out=await worker.recognize(band);
+                for(const text of ocrCandidatesFromResult(out)){
+                  rawSet.push(prefix+'name-band-'+variant.name+': '+text);
+                  for(const x of rankOcrPlayers(text,5))
+                    ranked.push({text,...x,variant:'name-band-'+variant.name});
+                }
+              }
+            }
+          }
+        }
+      };
+
+      // Önce mevcut koordinat matrisi. Sadece başarısızsa dikey tolerans
+      // taraması yapılır; böylece farklı ekran oranlarında isim satırının
+      // birkaç on piksel yukarı/aşağı kayması sorun olmaz.
+      await runVariants(info);
+      if(!ranked.some(x=>x.score>=.84) && formation.defenders===4 && (slot==='W-L'||slot==='IM-L')){
+        for(const fallback of buildVerticalFallbackCrops(field,slot,layoutBoxes[slot],4)){
+          await runVariants(fallback,'fallback: ');
+          if(ranked.some(x=>x.score>=.84))break;
+        }
+      }
+
+      // 4-5-1'in sol kanadında C. Pesalovo gibi isimler eski W-L
+      // kutusunun sol kenarına ve isim satırının altına taşabiliyor.
+      // Yalnızca W-L başarısızsa daha geniş yatay/alt tolerans uygula.
+      if(!ranked.some(x=>x.score>=.84) && formation.defenders===4 && slot==='W-L'){
+        const base=layoutBoxes[slot];
+        const variants=[
+          {...base,x1:0,x2:215,y1:545,y2:635},
+          {...base,x1:0,x2:235,y1:535,y2:655},
+          {...base,x1:0,x2:255,y1:525,y2:670}
+        ];
+        for(const box of variants){
+          const fallback=buildFixedNameCrop(field,slot,4,box);
+          await runVariants(fallback,'wide-fallback: ');
+          if(ranked.some(x=>x.score>=.84))break;
+        }
+      }
+      // 4-5-1 sağ kanatta isim etiketi oyuncunun altına sola doğru taşabiliyor.
+      // Standart WB-R crop başarısızsa sadece bu aktif bölgede sola/geniş tarama yap.
+      if(!ranked.some(x=>x.score>=.84) && formation.defenders===4 && slot==='WB-R'){
+        for(const box of [
+          {...layoutBoxes[slot],x1:1080,x2:1565,y1:350,y2:470},
+          {...layoutBoxes[slot],x1:1020,x2:1565,y1:330,y2:495},
+          {...layoutBoxes[slot],x1:950,x2:1565,y1:310,y2:515}
+        ]){
+          const fallback=buildFixedNameCrop(field,slot,4,box);
+          await runVariants(fallback,'wb-r-wide: ');
+          if(ranked.some(x=>x.score>=.84))break;
+        }
+      }
+
+      ranked.sort((a,b)=>b.score-a.score);
+      const best=ranked[0]||null;
+      const accepted=!!best&&best.score>=.84;
+      diagnostics.push({
+        slot,x:Math.round(info.x),y:Math.round(info.y),width:Math.round(info.width),height:Math.round(info.height),
+        raw:[...new Set(rawSet)].slice(0,12),
+        top:best?rankOcrPlayers(best.text,5):[],
+        accepted,player:accepted?best.player:null,
+        active:true,
+        reason:accepted?'KABUL':'Eşleşme yok veya en iyi skor < 0.84'
+      });
+      if(accepted)slotMatches.push({slot,player:best.player,score:best.score,text:best.text});
+    }
+    await worker.terminate();
+
+    const ocrMeta={
+      source:file.name,
+      imageWidth:img.naturalWidth,imageHeight:img.naturalHeight,scale,
+      fieldX:Math.round(bounds.x),fieldY:Math.round(bounds.y),
+      fieldWidth:Math.round(bounds.width),fieldHeight:Math.round(bounds.height),
+      formation:formation.defenders
+        ? formation.defenders+'-'+formation.midfielders+'-'+formation.forwards
+        : 'okunamadı',
+      formationOcr:formation.text||''
+    };
+    lastOcrDiagnostics={
+      schema:'hattrickai-v5-ocr-discovery-v1',
+      createdAt:new Date().toISOString(),
+      engine:'Tesseract.js tur+eng',
+      metadata:ocrMeta,
+      activeSlots:Object.keys(layoutBoxes),
+      acceptedCount:diagnostics.filter(x=>x.accepted).length,
+      activeCount:diagnostics.filter(x=>x.active!==false).length,
+      slots:diagnostics
+    };
+    setOcrJsonEnabled(true);
+    renderOcrPreview(img,source,bounds,layoutBoxes,diagnostics);
+    renderOcrDiagnostics(ocrMeta,diagnostics);
+
+    slotMatches.sort((a,b)=>b.score-a.score);
+    const found=[],usedPlayers=new Set();
+    for(const item of slotMatches){
+      if(usedPlayers.has(item.player.id))continue;
+      usedPlayers.add(item.player.id);
+      found.push(item);
+    }
+
+    selected.clear();activeSlot=null;lastRating=null;lastCalculation=null;setJsonEnabled(false);
+    for(const x of found)selected.set(x.slot,x.player);
+    renderPitch(null);renderPlayers();
+
+    status.textContent=found.length
+      ? found.length+' oyuncu bulundu ve sabit koordinatlara yerleştirildi: '+found.map(x=>x.player.name).join(', ')
+      : 'Sabit isim kutularından oyuncu okunamadı.';
+  }catch(e){
+    console.error(e);status.textContent='Resim okunamadı.';
+    err.textContent='Resimden kadro okunamadı: '+(e.message||e);err.style.display='block';
+  }finally{URL.revokeObjectURL(url)}
+}
+function renderPitch(r){lastRating=r;const layer=document.querySelector('.slots');layer.innerHTML='';for(const [code,cls,label] of SLOTS){const d=document.createElement('div');d.className='pslot '+cls+(selected.has(code)?' filled':'')+(activeSlot===code?' selected':'');const p=selected.get(code);d.innerHTML=p?'<div><small>'+label+'</small><b>'+esc(p.name)+'</b></div>':'<div><small>'+label+'</small><b>+</b></div>';d.onclick=()=>{activeSlot=code;renderPitch(lastRating);};layer.appendChild(d)}renderBoard(r)}
+function renderBoard(r){const b=document.getElementById('board');if(!r){b.innerHTML='';return}const v=[r.leftDefence,r.centralDefence,r.rightDefence,r.midfield,r.leftAttack,r.centralAttack,r.rightAttack];b.innerHTML='<div class="rrow">'+v.slice(0,3).map(x=>'<span>'+fmt(x)+'</span>').join('')+'</div><div class="rmid"><span>'+fmt(v[3])+'</span></div><div class="rrow">'+v.slice(4).map(x=>'<span>'+fmt(x)+'</span>').join('')+'</div><div class="rlabel">DEF-L • DEF-C • DEF-R / MID / ATT-L • ATT-C • ATT-R</div>'}
+function sorted(){const k=document.getElementById('sort').value,q=document.getElementById('search').value.trim().toLocaleLowerCase('tr-TR');return players.filter(p=>!q||p.name.toLocaleLowerCase('tr-TR').includes(q)).sort((a,b)=>(Number(b[k]||0)-Number(a[k]||0))||a.name.localeCompare(b.name,'tr'))}
+function renderPlayers(){const w=document.getElementById('players');w.innerHTML='';for(const p of sorted()){const row=document.createElement('div');row.className='player';row.innerHTML='<div class="player-main"><div class="pname">'+esc(p.name)+'</div><div class="pmeta">#'+p.id+'</div></div><div class="skills">'+SKILLS.map(([k,l])=>'<div class="skill"><b>'+Number(p[k]||0)+'</b><span>'+l+'</span></div>').join('')+'</div><div class="movegrid">'+SLOTS.map(x=>'<button class="move" data-slot="'+x[0]+'">'+x[2]+'</button>').join('')+'</div>';for(const b of row.querySelectorAll('.move'))b.onclick=()=>place(p,b.dataset.slot);if([...selected.values()].some(x=>x.id===p.id))row.style.opacity='.55';w.appendChild(row)}document.getElementById('count').textContent=selected.size+' / 11 oyuncu seçildi';document.getElementById('calculate').disabled=!selected.size}
+function place(p,slot){for(const [s,x] of selected)if(x.id===p.id)selected.delete(s);selected.set(slot,p);activeSlot=slot;lastRating=null;renderPitch(null);renderPlayers();document.getElementById('status').textContent=p.name+' → '+slot+' yerleştirildi.'}
+function payload(){const slots=[...selected].map(([code,p])=>({code,label:code,description:'Manual V5',playerName:p.name,playerId:p.id,rating:0,x:0,y:0,order:0}));return{lineup:{teamName:'MANUEL V5',formation:'MANUEL',slots},players:[...new Map([...selected.values()].map(p=>[p.id,p])).values()],context:{matchLocation:0,attitude:0,tactic:0,matchMinute:0,goalDifference:0,ignoreLeadRetreat:false}}}
+async function calc(){const btn=document.getElementById('calculate'),err=document.getElementById('error');err.style.display='none';btn.disabled=true;document.getElementById('status').textContent='V5 motoru hesaplıyor…';try{const request=payload();const r=await fetch('/api/v5/rating-engine/manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request)}),d=await r.json();if(!r.ok)throw Error(d.message||d.detail||'V5 hesaplama hatası');const v=d.rating||d;renderPitch(v);document.getElementById('result').innerHTML='<div class="eyebrow">V5 SONUCU</div><div class="ratings">'+[['DEF-L',v.leftDefence],['DEF-C',v.centralDefence],['DEF-R',v.rightDefence],['MID',v.midfield],['ATT-L',v.leftAttack],['ATT-C',v.centralAttack],['ATT-R',v.rightAttack]].map(x=>'<div class="rating"><b>'+fmt(x[1])+'</b><span>'+x[0]+'</span></div>').join('')+'</div>';lastCalculation={schema:'hattrickai-v5-manual-rating-v1',engine:'V5',calculatedAt:new Date().toISOString(),endpoint:'/api/v5/rating-engine/manual',request,response:d,selectedSlots:[...selected].map(([slot,p])=>({slot,playerId:p.id,playerName:p.name,skills:Object.fromEntries(SKILLS.map(([k])=>[k,Number(p[k]||0)]))}))};setJsonEnabled(true);document.getElementById('status').textContent='V5 hesaplandı • '+selected.size+' oyuncu'}catch(e){lastCalculation=null;setJsonEnabled(false);err.textContent=e.message;err.style.display='block';document.getElementById('status').textContent='Hesaplama başarısız'}finally{btn.disabled=!selected.size}}
+function setJsonEnabled(enabled){const b=document.getElementById('downloadJson');if(b)b.disabled=!enabled}
+function setOcrJsonEnabled(enabled){const b=document.getElementById('downloadOcrJson');if(b)b.disabled=!enabled}
+function downloadOcrJson(){
+  if(!lastOcrDiagnostics){alert('Önce bir ekran görüntüsü ile OCR keşfi çalıştırmalısın.');return}
+  const blob=new Blob([JSON.stringify(lastOcrDiagnostics,null,2)],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const source=String(lastOcrDiagnostics.metadata?.source||'ocr').replace(/[^a-zA-Z0-9_-]+/g,'_');
+  const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+  const a=document.createElement('a');a.href=url;
+  a.download='hattrickai-v5-ocr-'+source+'-'+stamp+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function downloadManualJson(){if(!lastCalculation){alert('Önce V5 hesaplamasını çalıştırmalısın.');return}const blob=new Blob([JSON.stringify(lastCalculation,null,2)],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const team=String(document.getElementById('teamTitle').textContent||'takim').replace(/[^a-zA-Z0-9_-]+/g,'_');const stamp=new Date().toISOString().replace(/[:.]/g,'-');const a=document.createElement('a');a.href=url;a.download='hattrickai-v5-manual-rating-'+team+'-'+stamp+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function clearAll(){selected.clear();activeSlot=null;lastRating=null;lastCalculation=null;lastOcrDiagnostics=null;setJsonEnabled(false);setOcrJsonEnabled(false);renderPitch(null);renderPlayers();document.getElementById('result').innerHTML='';document.getElementById('status').textContent='Kadron temizlendi.'}
+async function load(){try{const r=await fetch('/api/v5/team-player-export',{cache:'no-store'}),d=await r.json();if(!r.ok)throw Error(d.message||d.detail||'Oyuncu verisi alınamadı');players=d.players||[];document.getElementById('teamTitle').textContent=d.team?.teamName||'Takım kadrosu';document.getElementById('status').textContent=players.length+' oyuncu CHPP’den yüklendi.';renderPlayers();renderPitch(null)}catch(e){document.getElementById('error').textContent=e.message+' • Önce CHPP bağlantısını aç.';document.getElementById('error').style.display='block';document.getElementById('players').innerHTML='<div class="empty">Oyuncular yüklenemedi.</div>'}}
+document.getElementById('sort').onchange=renderPlayers;document.getElementById('search').oninput=renderPlayers;document.getElementById('imageImport').onclick=()=>document.getElementById('imageFile').click();document.getElementById('imageFile').onchange=e=>importLineupFromImage(e.target.files?.[0]);document.getElementById('calculate').onclick=calc;document.getElementById('clear').onclick=clearAll;document.getElementById('downloadJson').onclick=downloadManualJson;document.getElementById('downloadOcrJson').onclick=downloadOcrJson;setJsonEnabled(false);setOcrJsonEnabled(false);load();
+</script></body></html>
