@@ -30,7 +30,7 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          IMAGE="ghcr.io/dincer552/hat-v6"
           docker build --pull --build-arg BUILD_SHA="${GITHUB_SHA}" -t "${IMAGE}:${GITHUB_SHA}" -t "${IMAGE}:v6" .
       - name: Login to GHCR
         shell: bash
