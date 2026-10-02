@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          IMAGE="ghcr.io/dincer552/hat-v6"
           docker push "${IMAGE}:${GITHUB_SHA}"
           docker push "${IMAGE}:v6"
 
