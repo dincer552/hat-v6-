@@ -58,7 +58,7 @@ jobs:
           GHCR_TOKEN: ${{ github.token }}
           GHCR_USER: ${{ github.actor }}
           CHPP_CONSUMER_SECRET: ${{ secrets.CHPP_CONSUMER_SECRET }}
-          CHPP_MATCHORDER_WRITE_ENABLED: "true"
+          CHPP_MATCHORDER_WRITE_ENABLED: "false"
         run: |
           set -Eeuo pipefail
           IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
