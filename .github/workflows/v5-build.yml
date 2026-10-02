@@ -1,0 +1,169 @@
+name: HattrickAI V5 Deploy
+
+on:
+  push:
+    branches: [v5]
+  workflow_dispatch:
+
+concurrency:
+  group: v5-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout V5
+        uses: actions/checkout@v4
+      - name: JavaScript syntax regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node --check HattrickAI_V5/wwwroot/tactic-comparison.js
+          node --check HattrickAI_V5/wwwroot/bench-selection.js
+          node --check HattrickAI_V5/wwwroot/chpp-export.js
+          node --check HattrickAI_V5/wwwroot/team-player-chpp-export.js
+          node --check HattrickAI_V5/wwwroot/rating-engines.js
+      - name: CHPP trainer exclusion regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- trainer
+      - name: V5 user IM-L Hattrick screenshot regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- user-im-screenshots
+      - name: V5 normal IM full-sector regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- mid-diagnostic
+      - name: V5 exact HO crowding regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- stage6
+      - name: V5 IM screenshot combination diagnostic
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- mid-combinations
+      - name: CHPP WRITE-03 validation regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- write3
+      - name: CHPP WRITE-04 mock write regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- write4
+      - name: CHPP WRITE-05 permission regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- write5
+      - name: CHPP WRITE-06 live write path regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- write6
+      - name: CHPP WRITE-07 read-back regression
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- write7
+      - name: Build Docker image
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          docker build --pull --build-arg BUILD_SHA="${GITHUB_SHA}" -t "${IMAGE}:${GITHUB_SHA}" -t "${IMAGE}:v5" -f HattrickAI_V5/Dockerfile .
+      - name: Login to GHCR
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          set -Eeuo pipefail
+          printf '%s' "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
+          unset GHCR_TOKEN GHCR_USER
+      - name: Push Docker image to GHCR
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          docker push "${IMAGE}:${GITHUB_SHA}"
+          docker push "${IMAGE}:v5"
+
+  deploy:
+    runs-on: [self-hosted, linux, x64]
+    needs: build-and-push
+    steps:
+      - name: Deploy GHCR image on Azure VM
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_USER: ${{ github.actor }}
+          CHPP_CONSUMER_SECRET: ${{ secrets.CHPP_CONSUMER_SECRET }}
+          CHPP_MATCHORDER_WRITE_ENABLED: "true"
+        run: |
+          set -Eeuo pipefail
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          TAG="${GITHUB_SHA}"
+          LOG_DIR="/home/azureuser/hattrick-deploy"
+          LOG_FILE="${LOG_DIR}/deploy.log"
+          OLD_CONTAINER="hattrick-v5"
+          ROLLBACK_CONTAINER="hattrick-v5-rollback"
+          NEXT_CONTAINER="hattrick-v5-next"
+          DEPLOY_COMMITTED=0
+          HAD_OLD=0
+          mkdir -p "${LOG_DIR}"; touch "${LOG_FILE}"
+          log() { printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" | tee -a "${LOG_FILE}"; }
+          dump_container_diagnostics() {
+            log "========== NEXT CONTAINER DIAGNOSTICS =========="
+            docker ps -a --filter "name=${NEXT_CONTAINER}" --no-trunc | tee -a "${LOG_FILE}" || true
+            docker inspect "${NEXT_CONTAINER}" --format 'status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}} started={{.State.StartedAt}} finished={{.State.FinishedAt}}' 2>&1 | tee -a "${LOG_FILE}" || true
+            docker logs --tail 250 "${NEXT_CONTAINER}" 2>&1 | tee -a "${LOG_FILE}" || true
+            log "========== HEALTH RESPONSE =========="
+            curl -i --max-time 10 http://127.0.0.1:10000/health 2>&1 | tee -a "${LOG_FILE}" || true
+          }
+          cleanup_secrets() { docker logout ghcr.io >/dev/null 2>&1 || true; unset GHCR_TOKEN GHCR_USER CHPP_CONSUMER_SECRET CHPP_MATCHORDER_WRITE_ENABLED; }
+          rollback_deploy() {
+            local rc=$?
+            if [ "${rc}" -ne 0 ] && [ "${DEPLOY_COMMITTED}" -ne 1 ]; then
+              dump_container_diagnostics
+              log "⚠️ Yeni deployment başarısız; rollback başlıyor..."
+              docker rm -f "${NEXT_CONTAINER}" >/dev/null 2>&1 || true
+              if [ "${HAD_OLD}" -eq 1 ]; then
+                docker rename "${ROLLBACK_CONTAINER}" "${OLD_CONTAINER}" >/dev/null 2>&1 || true
+                docker start "${OLD_CONTAINER}" >/dev/null 2>&1 || true
+                if curl --fail --silent --show-error http://127.0.0.1:10000/health >/dev/null 2>&1; then log "🟢 Eski container rollback sonrası sağlıklı."; else log "❌ Eski container rollback sonrası health check geçemedi."; fi
+              else
+                log "⚠️ Önceki çalışan container bulunmadı; geri alınacak sürüm yok."
+              fi
+            fi
+            cleanup_secrets
+            if [ "${rc}" -ne 0 ]; then log "❌ DEPLOY FAILED (exit code ${rc})"; fi
+            exit "${rc}"
+          }
+          trap rollback_deploy EXIT
+          log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; log "🚀 GHCR VM deployment başladı"; log "Branch: ${GITHUB_REF_NAME}"; log "Commit: ${GITHUB_SHA:0:7}"; log "Image: ${IMAGE}:${TAG}"
+          printf '%s' "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
+          docker pull "${IMAGE}:${TAG}"; docker logout ghcr.io >/dev/null 2>&1 || true; unset GHCR_TOKEN GHCR_USER
+          if docker ps -a --format '{{.Names}}' | grep -qx "${ROLLBACK_CONTAINER}"; then if docker ps -a --format '{{.Names}}' | grep -qx "${OLD_CONTAINER}"; then docker rm -f "${ROLLBACK_CONTAINER}" >/dev/null 2>&1 || true; else docker rename "${ROLLBACK_CONTAINER}" "${OLD_CONTAINER}"; docker start "${OLD_CONTAINER}" >/dev/null 2>&1 || true; fi; fi
+          if docker ps -a --format '{{.Names}}' | grep -qx "${OLD_CONTAINER}"; then docker rename "${OLD_CONTAINER}" "${ROLLBACK_CONTAINER}"; docker stop "${ROLLBACK_CONTAINER}" >/dev/null; HAD_OLD=1; fi
+          docker rm -f "${NEXT_CONTAINER}" >/dev/null 2>&1 || true
+          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000 -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}" -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}" -v "${LOG_FILE}:/app/deploy.log:ro" "${IMAGE}:${TAG}"
+          unset CHPP_CONSUMER_SECRET CHPP_MATCHORDER_WRITE_ENABLED
+          healthy=0; for attempt in $(seq 1 12); do if docker ps --filter "name=${NEXT_CONTAINER}" --filter "status=running" | grep -q "${NEXT_CONTAINER}" && curl --fail --silent --show-error http://127.0.0.1:10000/health >/dev/null; then healthy=1; log "❤️ Health check başarılı (deneme ${attempt}/12)."; break; fi; log "⏳ Health check bekleniyor (deneme ${attempt}/12)."; sleep 5; done
+          if [ "${healthy}" -ne 1 ]; then log "❌ Yeni container health check başarısız."; exit 1; fi
+          curl --fail --silent --show-error --max-time 10 http://127.0.0.1:10000/ -o /dev/null || { log "❌ Homepage smoke test başarısız: / cevap vermiyor."; exit 1; }
+          log "🟢 Homepage smoke test başarılı."; health="$(curl --fail --silent --show-error http://127.0.0.1:10000/health)"; log "❤️ Health: ${health}"
+          docker rename "${NEXT_CONTAINER}" "${OLD_CONTAINER}"; DEPLOY_COMMITTED=1; if [ "${HAD_OLD}" -eq 1 ]; then docker rm "${ROLLBACK_CONTAINER}" >/dev/null; fi
+          log "🟢 GHCR VM deployment başarılı"; log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; docker image prune -f
