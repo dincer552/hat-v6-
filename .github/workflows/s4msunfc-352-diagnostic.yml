@@ -1,0 +1,40 @@
+name: S4MSUNFC 3-5-2 Engine Diagnostic
+
+on:
+  push:
+    branches: [v5]
+    paths:
+      - 'HattrickAI_V5.OfflineTests/TestJSON/RealHattrickMatch_S4MSUNFC_352_2026-09-18.json'
+      - 'HattrickAI_V5.OfflineTests/RealHattrickLineupRatingRegression.cs'
+      - 'HattrickAI_V5/Core/**'
+      - 'HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj'
+
+permissions:
+  contents: write
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout V5
+        uses: actions/checkout@v4
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Run 3-5-2 engine comparison
+        run: |
+          mkdir -p TestJSON/EngineDiagnostics
+          dotnet run --project HattrickAI_V5.OfflineTests/HattrickAI_V5.OfflineTests.csproj -- real-hattrick-rating > TestJSON/EngineDiagnostics/S4MSUNFC_352_latest.txt
+          cat TestJSON/EngineDiagnostics/S4MSUNFC_352_latest.txt
+      - name: Commit diagnostic result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add TestJSON/EngineDiagnostics/S4MSUNFC_352_latest.txt
+          if git diff --cached --quiet; then
+            echo "No diagnostic result change."
+          else
+            git commit -m "test: capture S4MSUNFC 3-5-2 engine results [skip ci]"
+            git push
+          fi
