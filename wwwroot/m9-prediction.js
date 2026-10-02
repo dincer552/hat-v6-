@@ -117,7 +117,7 @@
           metric('En sık skor', esc(simScore) + ' ('+esc(simScorePct)+')') + metric('En sık sonuç', esc(outcomeLabel(simResult))) +
         '</div>' +
         scenarioTable(sim?.scenarios) +
-        '<div style="margin-top:8px;padding:8px 9px;background:#f4f7f4;border-radius:8px;color:#747c76;font:10px/1.4 Arial">MC sonucu artık M10 formation competition'ı için kullanılan sinyallerden biridir; bu panel aynı sonucu tanısal ayrıntıyla gösterir.</div>' +
+        '<div style="margin-top:8px;padding:8px 9px;background:#f4f7f4;border-radius:8px;color:#747c76;font:10px/1.4 Arial">MC sonucu artık M10 formation competitionı için kullanılan sinyallerden biridir; bu panel aynı sonucu tanısal ayrıntıyla gösterir.</div>' +
       '</div>';
   }
 
