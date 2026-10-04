@@ -26,7 +26,7 @@ builder.Services.AddScoped<ChppV5>(sp =>
     var key = builder.Configuration["CHPP_CONSUMER_KEY"]?.Trim();
     if (string.IsNullOrWhiteSpace(key)) key = EmbeddedConsumerKey;
     var secret = builder.Configuration["CHPP_CONSUMER_SECRET"]?.Trim() ?? string.Empty;
-    return new ChppV5(new Credentials(key, secret), sp.GetRequiredService<IHttpContextAccessor>());
+    return new ChppV5(new Credentials(key, secret), sp.GetRequiredService<IHttpContextAccessor>(), sp.GetRequiredService<ChppDebugLog>());
 });
 
 var app = builder.Build();
