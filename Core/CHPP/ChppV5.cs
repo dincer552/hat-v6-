@@ -15,6 +15,10 @@ public sealed class ChppV5
     private const string AuthorizeUrl = "https://chpp.hattrick.org/oauth/authorize.aspx";
     private const string AccessTokenUrl = "https://chpp.hattrick.org/oauth/access_token.ashx";
     private const string UserAgent = "HattrickAI V6";
+    private const string RequestedScopes = "set_matchorder,manage_youthplayers";
+    private const string GrantedScopesSessionKey = "v6.scopes";
+    private const string SupporterSessionKey = "v6.isSupporter";
+    private const string ApiUrl = "https://chpp.hattrick.org/chppxml.ashx";
     private const string AccessTokenKey = "v6.access";
     private const string AccessSecretKey = "v6.accessSecret";
     private readonly HttpClient _http;
@@ -38,6 +42,9 @@ public sealed class ChppV5
     private string? AccessToken => Session.GetString(AccessTokenKey);
     private string? AccessSecret => Session.GetString(AccessSecretKey);
     public bool Connected => !string.IsNullOrWhiteSpace(AccessToken) && !string.IsNullOrWhiteSpace(AccessSecret);
+    public IReadOnlySet<string> GrantedScopes => ParseScopes(Session.GetString(GrantedScopesSessionKey));
+    public bool IsSupporter => string.Equals(Session.GetString(SupporterSessionKey), "1", StringComparison.OrdinalIgnoreCase);
+    public bool CanSetMatchOrder => GrantedScopes.Contains("set_matchorder") && IsSupporter;
 
     public async Task<string> StartAsync(string callback, CancellationToken ct)
     {
@@ -53,7 +60,10 @@ public sealed class ChppV5
             throw new InvalidOperationException($"CHPP request token yanıtı beklenen formatta değil: {body}");
         Session.SetString("v6.request", token);
         Session.SetString("v6.requestSecret", secret);
-        return AuthorizeUrl + "?oauth_token=" + Encode(token);
+        Session.SetString("v6.requestedScopes", RequestedScopes);
+        Session.Remove(GrantedScopesSessionKey);
+        Session.Remove(SupporterSessionKey);
+        return AuthorizeUrl + "?oauth_token=" + Encode(token) + "&scope=" + Encode(RequestedScopes);
     }
 
     public async Task CompleteAsync(string oauthToken, string verifier, CancellationToken ct)
@@ -76,8 +86,16 @@ public sealed class ChppV5
             throw new InvalidOperationException($"CHPP access token yanıtı beklenen formatta değil: {body}");
         Session.SetString(AccessTokenKey, access);
         Session.SetString(AccessSecretKey, accessSecret);
+        var returnedScopes = values.TryGetValue("scope", out var scope) ? scope : string.Empty;
+        Session.SetString(GrantedScopesSessionKey, returnedScopes);
+        var supporterXml = await GetXmlAsync("teamdetails", new Dictionary<string,string?> { ["version"] = "3.0" }, ct);
+        var supporterRoot = XmlV5.Root(supporterXml);
+        var supporterText = XmlV5.Text(supporterRoot, "UserIsSupporter");
+        if (string.IsNullOrWhiteSpace(supporterText)) supporterText = XmlV5.Text(supporterRoot?.Descendants("User").FirstOrDefault(), "HasSupporter");
+        Session.SetString(SupporterSessionKey, IsTruthy(supporterText) ? "1" : "0");
         Session.Remove("v6.request");
         Session.Remove("v6.requestSecret");
+        Session.Remove("v6.requestedScopes");
     }
 
     public void Disconnect()
@@ -86,6 +104,25 @@ public sealed class ChppV5
         Session.Remove(AccessSecretKey);
         Session.Remove("v6.request");
         Session.Remove("v6.requestSecret");
+        Session.Remove(GrantedScopesSessionKey);
+        Session.Remove("v6.requestedScopes");
+        Session.Remove(SupporterSessionKey);
+    }
+
+    public async Task<string> GetXmlAsync(string file, IDictionary<string,string?> parameters, CancellationToken ct)
+    {
+        if (!Connected) throw new InvalidOperationException("CHPP bağlantısı yok.");
+        var query = new List<KeyValuePair<string,string>> { new("file", file) };
+        query.AddRange(parameters.Where(p => !string.IsNullOrWhiteSpace(p.Value)).Select(p => new KeyValuePair<string,string>(p.Key, p.Value!)));
+        var requestUrl = ApiUrl + "?" + string.Join("&", query.Select(p => Encode(p.Key) + "=" + Encode(p.Value)));
+        var oauth = CreateOAuth(null, AccessToken!, null);
+        var all = query.Concat(oauth.Select(p => new KeyValuePair<string,string>(p.Key, p.Value))).ToList();
+        var signed = Sign("GET", ApiUrl, oauth, AccessSecret, all);
+        using var request = CreateRequest(HttpMethod.Get, requestUrl, signed.AuthorizationHeader);
+        using var response = await _http.SendAsync(request, ct);
+        var body = await response.Content.ReadAsStringAsync(ct);
+        if (!response.IsSuccessStatusCode) throw new HttpRequestException($"CHPP XML isteği başarısız ({(int)response.StatusCode}): {body}");
+        return body;
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string url, string? authorization)
@@ -138,6 +175,8 @@ public sealed class ChppV5
             .Select(x => x.Split('=', 2)).Where(x => x.Length == 2)
             .ToDictionary(x => DecodeForm(x[0]), x => DecodeForm(x[1]));
 
+    private static HashSet<string> ParseScopes(string? value) => (value ?? string.Empty).Split(new[] { ',', ' ', '+' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    private static bool IsTruthy(string? value) => string.Equals(value?.Trim(), "1", StringComparison.OrdinalIgnoreCase) || string.Equals(value?.Trim(), "true", StringComparison.OrdinalIgnoreCase);
     private static string DecodeForm(string value) => Uri.UnescapeDataString(value.Replace("+", " ", StringComparison.Ordinal));
     private static string Encode(string value) => Uri.EscapeDataString(value);
 }
