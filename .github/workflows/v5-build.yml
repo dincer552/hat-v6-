@@ -45,8 +45,16 @@ jobs:
         run: |
           set -Eeuo pipefail
           IMAGE="ghcr.io/dincer552/hat-v6"
-          docker push "${IMAGE}:${GITHUB_SHA}"
-          docker push "${IMAGE}:v6"
+          for attempt in 1 2 3 4 5; do
+            if docker push "${IMAGE}:${GITHUB_SHA}"; then break; fi
+            echo "GHCR push retry ${attempt}/5..."; sleep 5
+            [ "${attempt}" -lt 5 ] || exit 1
+          done
+          for attempt in 1 2 3 4 5; do
+            if docker push "${IMAGE}:v6"; then break; fi
+            echo "GHCR v6 tag push retry ${attempt}/5..."; sleep 5
+            [ "${attempt}" -lt 5 ] || exit 1
+          done
 
   deploy:
     runs-on: [self-hosted, linux, x64]
