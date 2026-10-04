@@ -39,6 +39,7 @@ app.Urls.Add($"http://0.0.0.0:{port}");
 app.UseSession();
 app.UseDefaultFiles();
 app.UseStaticFiles();
+app.MapGet("/hattrick", () => Results.Redirect("/hattrick.html"));
 
 var build = Environment.GetEnvironmentVariable("V5_BUILD")
     ?? Environment.GetEnvironmentVariable("BUILD_SHA")
