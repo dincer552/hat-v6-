@@ -57,7 +57,6 @@ public sealed class ChppV5
         using var request = CreateRequest(HttpMethod.Get, AddQuery(RequestTokenUrl, oauth, signed.Signature), null);
         using var response = await _http.SendAsync(request, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
-        _log.Info("09-ACCESS", $"Access token yanıtı: HTTP {(int)response.StatusCode} {response.StatusCode}. Body={body}");
         _log.Info("03-RESPONSE", $"Request token yanıtı: HTTP {(int)response.StatusCode} {response.StatusCode}. Body={body}");
         if (!response.IsSuccessStatusCode)
         {
@@ -76,7 +75,11 @@ public sealed class ChppV5
         }
         var values = ParseForm(body);
         if (!values.TryGetValue("oauth_token", out var token) || !values.TryGetValue("oauth_token_secret", out var secret))
+        {
+            _log.Error("05-REQUEST-TOKEN", "Request token yanıtında oauth_token veya oauth_token_secret bulunamadı.");
             throw new InvalidOperationException($"CHPP request token yanıtı beklenen formatta değil: {body}");
+        }
+        _log.Info("05-REQUEST-TOKEN", "oauth_token + oauth_token_secret başarıyla alındı.");
         Session.SetString("v6.request", token);
         Session.SetString("v6.requestSecret", secret);
         Session.SetString("v6.requestedScopes", RequestedScopes);
@@ -106,6 +109,7 @@ public sealed class ChppV5
         using var request = CreateRequest(HttpMethod.Get, AddQuery(AccessTokenUrl, oauth, signed.Signature), null);
         using var response = await _http.SendAsync(request, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
+        _log.Info("09-ACCESS", $"Access token yanıtı: HTTP {(int)response.StatusCode} {response.StatusCode}. Body={body}");
         if (!response.IsSuccessStatusCode)
         {
             var oauth2 = CreateOAuth(null, token, verifier);
@@ -123,7 +127,11 @@ public sealed class ChppV5
         }
         var values = ParseForm(body);
         if (!values.TryGetValue("oauth_token", out var access) || !values.TryGetValue("oauth_token_secret", out var accessSecret))
+        {
+            _log.Error("11-ACCESS-TOKEN", "Access token yanıtında oauth_token veya oauth_token_secret bulunamadı.");
             throw new InvalidOperationException($"CHPP access token yanıtı beklenen formatta değil: {body}");
+        }
+        _log.Info("11-ACCESS-TOKEN", "access_token + access_token_secret başarıyla alındı.");
         Session.SetString(AccessTokenKey, access);
         Session.SetString(AccessSecretKey, accessSecret);
         var returnedScopes = values.TryGetValue("scope", out var scope) ? scope : string.Empty;
@@ -167,7 +175,13 @@ public sealed class ChppV5
         using var request = CreateRequest(HttpMethod.Get, requestUrl, signed.AuthorizationHeader);
         using var response = await _http.SendAsync(request, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
-        if (!response.IsSuccessStatusCode) throw new HttpRequestException($"CHPP XML isteği başarısız ({(int)response.StatusCode}): {body}");
+        _log.Info("12-TEAMDETAILS", $"CHPP XML yanıtı: HTTP {(int)response.StatusCode} {response.StatusCode}; file={file}");
+        if (!response.IsSuccessStatusCode)
+        {
+            _log.Error("12-TEAMDETAILS", $"teamdetails başarısız. Body={body}");
+            throw new HttpRequestException($"CHPP XML isteği başarısız ({(int)response.StatusCode}): {body}");
+        }
+        _log.Info("12-TEAMDETAILS", "teamdetails XML başarıyla alındı.");
         return body;
     }
 
