@@ -9,5 +9,6 @@
     <Compile Remove="OfflineTests/**/*.cs" />
     <Compile Remove="Core/CHPP/**/*.cs" />
     <Compile Include="Core/CHPP/ChppV5.cs" />
+    <Compile Include="Core/CHPP/ChppDebugLog.cs" />
   </ItemGroup>
 </Project>
