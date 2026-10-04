@@ -60,8 +60,13 @@ app.MapGet("/auth/chpp/start", async (HttpContext http, ChppV5 chpp, ChppDebugLo
     log.Info("00-ROUTE", $"/auth/chpp/start çağrıldı. Host={http.Request.Host}");
     try
     {
-        if (string.IsNullOrWhiteSpace(builder.Configuration["CHPP_CONSUMER_SECRET"]))
+        var configured = !string.IsNullOrWhiteSpace(builder.Configuration["CHPP_CONSUMER_SECRET"]);
+        log.Info("00-CONFIG", $"CHPP_CONSUMER_SECRET yapılandırması: {(configured ? "VAR" : "YOK")}");
+        if (!configured)
+        {
+            log.Error("00-CONFIG", "CHPP_CONSUMER_SECRET Azure container environment içinde bulunamadı. OAuth request_token aşamasına geçilmedi.");
             return Results.Redirect("/hattrick?error=" + Uri.EscapeDataString("CHPP_CONSUMER_SECRET tanımlı değil."));
+        }
         var proto = http.Request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? http.Request.Scheme;
         var callback = $"{proto}://{http.Request.Host}/auth/chpp/callback";
         var url = await chpp.StartAsync(callback, ct);
