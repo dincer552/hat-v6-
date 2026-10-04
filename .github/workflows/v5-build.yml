@@ -57,11 +57,12 @@ jobs:
         env:
           GHCR_TOKEN: ${{ github.token }}
           GHCR_USER: ${{ github.actor }}
+          CHPP_CONSUMER_KEY: ${{ secrets.CHPP_CONSUMER_KEY }}
           CHPP_CONSUMER_SECRET: ${{ secrets.CHPP_CONSUMER_SECRET }}
           CHPP_MATCHORDER_WRITE_ENABLED: "false"
         run: |
           set -Eeuo pipefail
-          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
+          IMAGE="ghcr.io/dincer552/hat-v6"
           TAG="${GITHUB_SHA}"
           LOG_DIR="/home/azureuser/hattrick-deploy"
           LOG_FILE="${LOG_DIR}/deploy.log"
@@ -79,7 +80,7 @@ jobs:
             docker logs --tail 250 "${NEXT_CONTAINER}" 2>&1 | tee -a "${LOG_FILE}" || true
             curl -i --max-time 10 http://127.0.0.1:10000/health 2>&1 | tee -a "${LOG_FILE}" || true
           }
-          cleanup() { docker logout ghcr.io >/dev/null 2>&1 || true; unset GHCR_TOKEN GHCR_USER CHPP_CONSUMER_SECRET CHPP_MATCHORDER_WRITE_ENABLED; }
+          cleanup() { docker logout ghcr.io >/dev/null 2>&1 || true; unset GHCR_TOKEN GHCR_USER CHPP_CONSUMER_KEY CHPP_CONSUMER_SECRET CHPP_MATCHORDER_WRITE_ENABLED; }
           rollback() {
             local rc=$?
             if [ "${rc}" -ne 0 ] && [ "${DEPLOY_COMMITTED}" -ne 1 ]; then
@@ -112,7 +113,7 @@ jobs:
             HAD_OLD=1
           fi
           docker rm -f "${NEXT_CONTAINER}" >/dev/null 2>&1 || true
-          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000             -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}"             -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}"             -v "${LOG_FILE}:/app/deploy.log:ro" "${IMAGE}:${TAG}"
+          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000             -e CHPP_CONSUMER_KEY="${CHPP_CONSUMER_KEY}"             -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}"             -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}"             -v "${LOG_FILE}:/app/deploy.log:ro" "${IMAGE}:${TAG}"
           unset CHPP_CONSUMER_SECRET CHPP_MATCHORDER_WRITE_ENABLED
           healthy=0
           for attempt in $(seq 1 12); do
