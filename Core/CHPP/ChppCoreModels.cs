@@ -20,7 +20,25 @@ public sealed record Player(
     int Loyalty=0,
     int InjuryLevel=-1,
     PlayerSpecialty Specialty=PlayerSpecialty.None,
-    int SetPiecesSkill=0);
+    int SetPiecesSkill=0)
+{
+    // CHPP / Hattrick oyuncu listesi alanları. Ana sayfa ve Genel sekmesi
+    // aynı oyuncu kaynağını kullanabilsin diye tek modelde tutulur.
+    public string? FirstName { get; init; }
+    public string? LastName { get; init; }
+    public int Age { get; init; }
+    public int AgeDays { get; init; }
+    public int Tsi { get; init; }
+    public int Salary { get; init; }
+    public int Leadership { get; init; }
+    public int ShirtNumber { get; init; }
+    public int Cards { get; init; }
+    public string? LastMatchDate { get; init; }
+    public double? LastMatchRating { get; init; }
+    public string? ArrivalDate { get; init; }
+    public string? BestPosition { get; init; }
+    public string? Nationality { get; init; }
+}
 
 public sealed record Slot(
     string Code,
