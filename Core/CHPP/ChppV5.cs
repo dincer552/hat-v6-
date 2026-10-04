@@ -24,11 +24,13 @@ public sealed class ChppV5
     private readonly HttpClient _http;
     private readonly Credentials _credentials;
     private readonly IHttpContextAccessor _context;
+    private readonly ChppDebugLog _log;
 
-    public ChppV5(Credentials credentials, IHttpContextAccessor context)
+    public ChppV5(Credentials credentials, IHttpContextAccessor context, ChppDebugLog log)
     {
         _credentials = credentials;
         _context = context;
+        _log = log;
         _http = new HttpClient(new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
@@ -48,11 +50,15 @@ public sealed class ChppV5
 
     public async Task<string> StartAsync(string callback, CancellationToken ct)
     {
+        _log.Info("01-START", $"CHPP bağlantı başlatıldı. Callback={callback}");
         var oauth = CreateOAuth(callback, null, null);
+        _log.Info("02-REQUEST", "Request token imzası hazırlandı; CHPP request_token gönderiliyor.");
         var signed = Sign("GET", RequestTokenUrl, oauth, null, null);
         using var request = CreateRequest(HttpMethod.Get, AddQuery(RequestTokenUrl, oauth, signed.Signature), null);
         using var response = await _http.SendAsync(request, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
+        _log.Info("09-ACCESS", $"Access token yanıtı: HTTP {(int)response.StatusCode} {response.StatusCode}. Body={body}");
+        _log.Info("03-RESPONSE", $"Request token yanıtı: HTTP {(int)response.StatusCode} {response.StatusCode}. Body={body}");
         if (!response.IsSuccessStatusCode)
         {
             var oauth2 = CreateOAuth(callback, null, null);
@@ -61,7 +67,11 @@ public sealed class ChppV5
             using var response2 = await _http.SendAsync(fallback, ct);
             var body2 = await response2.Content.ReadAsStringAsync(ct);
             if (!response2.IsSuccessStatusCode)
+            {
+                _log.Error("04-FALLBACK", $"Authorization-header fallback da başarısız: HTTP {(int)response2.StatusCode}. Body={body2}");
                 throw new HttpRequestException($"CHPP request token alınamadı. İlk yanıt: {body} İkinci yanıt: {body2}");
+            }
+            _log.Info("04-FALLBACK", $"Authorization-header fallback başarılı: HTTP {(int)response2.StatusCode}.");
             body = body2;
         }
         var values = ParseForm(body);
@@ -70,18 +80,26 @@ public sealed class ChppV5
         Session.SetString("v6.request", token);
         Session.SetString("v6.requestSecret", secret);
         Session.SetString("v6.requestedScopes", RequestedScopes);
+        _log.Info("05-SESSION", "Request token ve request secret session'a kaydedildi; scope hazırlandı.");
         Session.Remove(GrantedScopesSessionKey);
         Session.Remove(SupporterSessionKey);
-        return AuthorizeUrl + "?oauth_token=" + Encode(token) + "&scope=" + Encode(RequestedScopes);
+        var authorizeUrl = AuthorizeUrl + "?oauth_token=" + Encode(token) + "&scope=" + Encode(RequestedScopes);
+        _log.Info("06-AUTHORIZE", "Hattrick yetkilendirme sayfasına yönlendirme hazırlanıyor.");
+        return authorizeUrl;
     }
 
     public async Task CompleteAsync(string oauthToken, string verifier, CancellationToken ct)
     {
+        _log.Info("07-CALLBACK", "CHPP callback alındı; access token aşaması başlıyor.");
         Session.SetString("v6.request", oauthToken.Trim());
         var token = Session.GetString("v6.request");
         var secret = Session.GetString("v6.requestSecret");
         if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(secret))
+        {
+            _log.Error("08-SESSION", "Callback geldi ancak request token session'da bulunamadı.");
             throw new InvalidOperationException("CHPP yetkilendirme oturumu bulunamadı.");
+        }
+        _log.Info("08-SESSION", "Request token session'dan alındı; verifier ile access token isteniyor.");
         verifier = verifier.Trim().Replace("#_=_", string.Empty, StringComparison.Ordinal);
         var oauth = CreateOAuth(null, token, verifier);
         var signed = Sign("GET", AccessTokenUrl, oauth, secret, null);
@@ -96,7 +114,11 @@ public sealed class ChppV5
             using var response2 = await _http.SendAsync(fallback, ct);
             var body2 = await response2.Content.ReadAsStringAsync(ct);
             if (!response2.IsSuccessStatusCode)
+            {
+                _log.Error("10-FALLBACK", $"Access-token Authorization-header fallback başarısız: HTTP {(int)response2.StatusCode}. Body={body2}");
                 throw new HttpRequestException($"CHPP access token alınamadı. İlk yanıt: {body} İkinci yanıt: {body2}");
+            }
+            _log.Info("10-FALLBACK", $"Access-token fallback başarılı: HTTP {(int)response2.StatusCode}.");
             body = body2;
         }
         var values = ParseForm(body);
@@ -106,18 +128,23 @@ public sealed class ChppV5
         Session.SetString(AccessSecretKey, accessSecret);
         var returnedScopes = values.TryGetValue("scope", out var scope) ? scope : string.Empty;
         Session.SetString(GrantedScopesSessionKey, returnedScopes);
+        _log.Info("11-SESSION", $"Access token session'a kaydedildi. Granted scopes={returnedScopes}");
+        _log.Info("12-TEAMDETAILS", "teamdetails v3.0 çağrılıyor; supporter durumu doğrulanacak.");
         var supporterXml = await GetXmlAsync("teamdetails", new Dictionary<string,string?> { ["version"] = "3.0" }, ct);
         var supporterRoot = XmlV5.Root(supporterXml);
         var supporterText = XmlV5.Text(supporterRoot, "UserIsSupporter");
         if (string.IsNullOrWhiteSpace(supporterText)) supporterText = XmlV5.Text(supporterRoot?.Descendants("User").FirstOrDefault(), "HasSupporter");
         Session.SetString(SupporterSessionKey, IsTruthy(supporterText) ? "1" : "0");
+        _log.Info("13-SUPPORTER", $"Supporter doğrulandı: {supporterText}; CanSetMatchOrder={CanSetMatchOrder}");
         Session.Remove("v6.request");
         Session.Remove("v6.requestSecret");
         Session.Remove("v6.requestedScopes");
+        _log.Info("14-COMPLETE", "CHPP bağlantı bilgileri session'a kaydedildi; OAuth bağlantısı tamamlandı.");
     }
 
     public void Disconnect()
     {
+        _log.Info("LOGOUT", "CHPP session bağlantısı temizleniyor.");
         Session.Remove(AccessTokenKey);
         Session.Remove(AccessSecretKey);
         Session.Remove("v6.request");
@@ -133,6 +160,7 @@ public sealed class ChppV5
         var query = new List<KeyValuePair<string,string>> { new("file", file) };
         query.AddRange(parameters.Where(p => !string.IsNullOrWhiteSpace(p.Value)).Select(p => new KeyValuePair<string,string>(p.Key, p.Value!)));
         var requestUrl = ApiUrl + "?" + string.Join("&", query.Select(p => Encode(p.Key) + "=" + Encode(p.Value)));
+        _log.Info("API", $"CHPP XML çağrısı: file={file}");
         var oauth = CreateOAuth(null, AccessToken!, null);
         var all = query.Concat(oauth.Select(p => new KeyValuePair<string,string>(p.Key, p.Value))).ToList();
         var signed = Sign("GET", ApiUrl, oauth, AccessSecret, all);
