@@ -42,7 +42,7 @@ var build = Environment.GetEnvironmentVariable("V6_BUILD")
     ?? "dev";
 if (build.Length > 7) build = build[..7];
 
-app.MapGet("/hattrick", () => Results.Redirect("/hattrick.html"));
+app.MapGet("/hattrick", (ChppDebugLog log) => { log.Info("15-HOME", "/hattrick ana sayfasına yönlendiriliyor."); return Results.Redirect("/hattrick.html"); });
 app.MapGet("/chpp-logs", () => Results.Redirect("/chpp-logs.html"));
 app.MapGet("/api/chpp/logs", (ChppDebugLog log) => Results.Ok(new { entries = log.GetRecent(300) }));
 app.MapPost("/api/chpp/logs/clear", (ChppDebugLog log) => { log.Clear(); return Results.Ok(new { ok = true }); });
@@ -83,6 +83,7 @@ app.MapGet("/auth/chpp/callback", async (HttpContext http, ChppV5 chpp, ChppDebu
         if (string.IsNullOrWhiteSpace(oauth_token) || string.IsNullOrWhiteSpace(oauth_verifier))
             return Results.Redirect("/hattrick?error=" + Uri.EscapeDataString("CHPP callback eksik parametre ile geldi."));
         await chpp.CompleteAsync(oauth_token, oauth_verifier, ct);
+        log.Info("15-REDIRECT", "CHPP bağlantısı tamamlandı; V6 /hattrick sayfasına dönülüyor.");
         return Results.Redirect("/hattrick");
     }
     catch (Exception ex)
