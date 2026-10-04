@@ -48,7 +48,7 @@ app.MapGet("/api/v5/status", (ChppV5 chpp) => Results.Ok(new
 {
     connected = chpp.Connected,
     configured = !string.IsNullOrWhiteSpace(builder.Configuration["CHPP_CONSUMER_SECRET"]),
-    canSetMatchOrder = false
+    canSetMatchOrder = chpp.CanSetMatchOrder
 }));
 
 app.MapGet("/auth/chpp/start", async (HttpContext http, ChppV5 chpp, CancellationToken ct) =>
