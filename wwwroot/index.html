@@ -1,22 +1,37 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0c1718">
-<title>HattrickAI V6 • CHPP</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d1b1e">
+<title>Dinçer Yüksek | Elektrik & Otomasyon</title>
 <style>
-body{margin:0;background:#eef1ef;color:#27322d;font-family:Arial,sans-serif}.page{max-width:620px;margin:70px auto;padding:20px}.card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 3px 14px #0002;text-align:center}.brand{font-size:28px;font-weight:900}.brand span{color:#21804a}.build{font-size:11px;color:#7a827d;margin:8px 0 25px}.dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#888;margin-right:8px}.dot.on{background:#1ea65c}.status{font-weight:800;margin:12px 0 6px}.sub{font-size:12px;color:#747c76;margin-bottom:22px}.btn{border:0;border-radius:10px;background:#21804a;color:#fff;padding:13px 20px;font-weight:900;cursor:pointer}.btn.off{background:#6f7772}.error{margin-top:18px;padding:10px;border-radius:9px;background:#fff1ef;color:#9a3b31;font-size:12px;display:none}</style>
+:root{--bg:#eef2f1;--card:#fff;--ink:#172522;--muted:#66736e;--accent:#168653;--line:#dfe7e3}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#edf3f0,#f8faf9);color:var(--ink);font-family:Inter,Arial,sans-serif}.wrap{max-width:1050px;margin:auto;padding:32px 20px 60px}.hero{background:#102326;color:#fff;border-radius:24px;padding:42px;box-shadow:0 16px 45px #10232625}.eyebrow{color:#62d89b;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:12px}.hero h1{font-size:42px;margin:10px 0 6px}.hero h2{font-size:19px;font-weight:600;margin:0;color:#b9ccc5}.contact{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.contact a,.contact span{color:#d9e8e3;text-decoration:none;background:#ffffff12;padding:9px 12px;border-radius:10px;font-size:14px}.grid{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-top:20px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 7px 25px #18352b0d}.card h3{margin:0 0 18px;font-size:18px}.item{padding:16px 0;border-top:1px solid var(--line)}.item:first-of-type{border-top:0;padding-top:0}.role{font-weight:850}.company{color:var(--accent);font-weight:750;margin-top:3px}.date{color:var(--muted);font-size:13px;margin:5px 0 10px}.item p{color:#52605b;line-height:1.55;margin:0}.tags{display:flex;flex-wrap:wrap;gap:8px}.tag{background:#edf7f1;color:#176c45;padding:8px 10px;border-radius:9px;font-size:13px;font-weight:700}.project{padding:13px 0;border-top:1px solid var(--line)}.project:first-of-type{border-top:0}.project b{display:block;margin-bottom:4px}.project span{color:var(--muted);font-size:13px;line-height:1.45}.nav{display:flex;justify-content:flex-end;margin-bottom:16px}.nav a{color:#176c45;text-decoration:none;font-weight:800}.hattrick{margin-top:20px;background:#fff;border:1px solid #cfe5d9;border-radius:20px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:20px}.hattrick a{background:var(--accent);color:#fff;text-decoration:none;padding:12px 18px;border-radius:11px;font-weight:850}.small{color:var(--muted);font-size:13px;line-height:1.5}@media(max-width:760px){.grid{grid-template-columns:1fr}.hero{padding:28px}.hero h1{font-size:34px}.hattrick{align-items:flex-start;flex-direction:column}}
+</style>
 </head>
-<body><main class="page"><section class="card">
-<div class="brand">Hattrick<span>AI</span> V6</div><div class="build" id="build">build …</div>
-<div><i class="dot" id="dot"></i><span id="status">CHPP bağlantısı kontrol ediliyor</span></div>
-<div class="sub" id="sub">V6 altyapısı şu aşamada yalnızca CHPP bağlantısı için hazır.</div>
-<button class="btn off" id="connect">CHPP BAĞLAN</button><div class="error" id="error"></div>
-</section></main>
-<script>
-async function load(){
- try{const b=await fetch('/api/v5/build',{cache:'no-store'}).then(r=>r.json());document.getElementById('build').textContent='build '+String(b.build||'dev').slice(0,7)}catch{}
- try{const s=await fetch('/api/v5/status',{cache:'no-store'}).then(r=>r.json());const dot=document.getElementById('dot'),btn=document.getElementById('connect');if(s.connected){dot.classList.add('on');document.getElementById('status').textContent='CHPP bağlı';document.getElementById('sub').textContent='CHPP hesabı bağlı. V6 motor özellikleri henüz etkin değil.';btn.textContent='CHPP BAĞLI';btn.classList.remove('off')}else{document.getElementById('status').textContent='CHPP bağlı değil';document.getElementById('sub').textContent='V6 altyapısı şu aşamada yalnızca CHPP bağlantısı için hazır.';btn.textContent='CHPP BAĞLAN';btn.classList.add('off')}}catch(e){document.getElementById('status').textContent='CHPP durumuna ulaşılamadı';document.getElementById('sub').textContent=e.message}}
-document.getElementById('connect').onclick=()=>location.href='/auth/chpp/start';load();
-</script></body></html>
+<body><main class="wrap">
+<nav class="nav"><a href="/hattrick">HattrickAI →</a></nav>
+<section class="hero">
+<div class="eyebrow">Elektrik & Otomasyon Takım Lideri</div>
+<h1>Dinçer Yüksek</h1><h2>Elektrik-Elektronik Mühendisi · Otomasyon · HVAC · PLC · SCADA</h2>
+<div class="contact"><a href="mailto:dinceryuksek@gmail.com">dinceryuksek@gmail.com</a><a href="tel:+905068324766">+90 506 832 47 66</a><span>Kocaeli · Darıca</span></div>
+</section>
+<div class="grid">
+<section class="card"><h3>Profesyonel Deneyim</h3>
+<div class="item"><div class="role">Elektrik & Otomasyon Takım Lideri</div><div class="company">Systemair HSK Havalandırma End. San. ve Tic. A.Ş.</div><div class="date">Ağustos 2023 – Halen · Kocaeli</div><p>Elektrik otomasyon ekibinin yönetimi ve planlaması; müşteri taleplerine özel yazılım çözümleri; saha kontrol, destek ve sorun çözümü; mevcut yazılımların güncellenmesi ve verimlilik çalışmaları; teknik teklif hazırlığına destek.</p></div>
+<div class="item"><div class="role">Teknik Şef</div><div class="company">Ligna Decor Üretim ve Pazarlama A.Ş.</div><div class="date">Ocak 2020 – Ağustos 2023</div><p>Üretim hatları ve yardımcı tesislerde otomasyon sistemlerinin bakımı, PLC/otomasyon revizyonları, robot programları, pano yapımı, yeni sistemlerin koordinasyonu ve teknik ekip iş planlaması.</p></div>
+<div class="item"><div class="role">Otomasyon Mühendisi</div><div class="company">Apex Otomasyon</div><div class="date">Mayıs 2016 – Ocak 2020</div><p>Otomasyon panosu tasarımı ve maliyetlendirme, PLC yazılımı, sensör ve sürücü parametreleri, saha testleri ve teslim; BACnet, Modbus ve TCP/IP haberleşme sistemleri.</p></div>
+</section>
+<aside class="card"><h3>Teknik Yetkinlikler</h3><div class="tags">
+<div class="tag">Siemens S7 PLC</div><div class="tag">TIA Portal</div><div class="tag">WinCC / SCADA</div><div class="tag">EPLAN P8</div><div class="tag">Omron CX-Programmer</div><div class="tag">ABB RobotStudio</div><div class="tag">AutoCAD</div><div class="tag">Modbus</div><div class="tag">BACnet</div><div class="tag">TCP/IP</div><div class="tag">Elektrik Panoları</div><div class="tag">Otomasyon</div><div class="tag">Microsoft Office</div></div>
+<h3 style="margin-top:28px">Eğitim</h3><div class="small"><b>Sakarya Üniversitesi</b><br>Elektrik-Elektronik Mühendisliği · 2008–2014<br><br><b>Samsun Milli Piyango Anadolu Lisesi</b><br>Fen Bilimleri · 2008</div>
+<h3 style="margin-top:28px">Dil</h3><div class="small">İngilizce · Orta</div></aside>
+</div>
+<section class="card" style="margin-top:20px"><h3>Öne Çıkan Projeler</h3>
+<div class="project"><b>TOFAŞ Bursa Fabrikası Havalandırma</b><span>46 klima santralinin revizyonu, 10 yeni klima santralinin PLC programı ve SCADA sisteminin yeniden kurulumu.</span></div>
+<div class="project"><b>Renault Fabrika Havalandırma Sistemi</b><span>19 klima santralinin program revizyonu, 8 yeni klima santralinin kurulumu ve WinCC SCADA revizyonları.</span></div>
+<div class="project"><b>Bezmialem Vakıf Üniversitesi Hastanesi</b><span>Klima santrallerinin elektrik projeleri, malzeme takibi ve pano devreye alma süreçleri.</span></div>
+<div class="project"><b>Ankara Cumhurbaşkanlığı Binaları</b><span>Klima santrallerinin elektrik projeleri, malzeme takibi, pano devreye alma ve saha süreçleri.</span></div>
+</section>
+<section class="hattrick"><div><strong>HattrickAI</strong><div class="small">Hattrick için geliştirdiğim yapay zekâ destekli analiz ve CHPP entegrasyon projesi. Şu an V6 üzerinde CHPP bağlantı altyapısı aktif.</div></div><a href="/hattrick">Projeyi Aç</a></section>
+</main></body></html>
