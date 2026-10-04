@@ -21,6 +21,7 @@ builder.Services.AddSession(o =>
     o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     o.IdleTimeout = TimeSpan.FromHours(8);
 });
+builder.Services.AddScoped<TeamPlayerChppExportService>();
 builder.Services.AddScoped<ChppV5>(sp =>
 {
     var key = builder.Configuration["CHPP_CONSUMER_KEY"]?.Trim();
@@ -54,6 +55,13 @@ app.MapGet("/api/v5/status", (ChppV5 chpp) => Results.Ok(new
     configured = !string.IsNullOrWhiteSpace(builder.Configuration["CHPP_CONSUMER_SECRET"]),
     canSetMatchOrder = chpp.CanSetMatchOrder
 }));
+
+app.MapGet("/api/v5/team-player-export", async (TeamPlayerChppExportService service, CancellationToken ct) =>
+{
+    try { return Results.Ok(await service.ExportAsync(build, ct)); }
+    catch (UnauthorizedAccessException) { return Results.Unauthorized(); }
+    catch (Exception ex) { return Results.Problem(ex.Message); }
+});
 
 app.MapGet("/auth/chpp/start", async (HttpContext http, ChppV5 chpp, ChppDebugLog log, CancellationToken ct) =>
 {
