@@ -125,8 +125,8 @@ public sealed class ChppV5
         var signingKey = Encode(_credentials.Secret) + "&" + Encode(tokenSecret ?? string.Empty);
         using var hmac = new HMACSHA1(Encoding.ASCII.GetBytes(signingKey));
         var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.ASCII.GetBytes(baseString)));
-        var header = oauth.Select(p => Encode(p.Key) + "="" + Encode(p.Value) + """).ToList();
-        header.Add("oauth_signature="" + Encode(signature) + """);
+        var header = oauth.Select(p => Encode(p.Key) + "=\"" + Encode(p.Value) + "\"").ToList();
+        header.Add("oauth_signature=\"" + Encode(signature) + "\"");
         return (signature, "OAuth " + string.Join(", ", header));
     }
 
