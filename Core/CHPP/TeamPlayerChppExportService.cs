@@ -46,7 +46,7 @@ public sealed class TeamPlayerChppExportService
 
         return new
         {
-            schema = "hattrickai-v5-team-player-chpp-v1",
+            schema = "hattrickai-v5-team-player-chpp-v2",
             exportedAt = DateTimeOffset.UtcNow,
             source = "CHPP",
             security = new
@@ -72,22 +72,42 @@ public sealed class TeamPlayerChppExportService
         };
     }
 
-    private static Player ParsePlayer(XElement p) => new(
-        XmlV5.Int(p, "PlayerID"),
-        XmlV5.Text(p, "PlayerName"),
-        XmlV5.Int(p, "KeeperSkill"),
-        XmlV5.Int(p, "DefenderSkill"),
-        XmlV5.Int(p, "PlaymakerSkill"),
-        XmlV5.Int(p, "PassingSkill"),
-        XmlV5.Int(p, "WingerSkill"),
-        XmlV5.Int(p, "ScorerSkill"),
-        XmlV5.Int(p, "StaminaSkill"),
-        XmlV5.Int(p, "PlayerForm"),
-        XmlV5.Int(p, "Experience"),
-        XmlV5.Int(p, "Loyalty"),
-        XmlV5.Int(p, "InjuryLevel"),
-        ParseSpecialty(XmlV5.Text(p, "Specialty")),
-        XmlV5.Int(p, "SetPiecesSkill"));
+    private static Player ParsePlayer(XElement p)
+    {
+        var player = new Player(
+            XmlV5.Int(p, "PlayerID"),
+            XmlV5.Text(p, "PlayerName"),
+            XmlV5.Int(p, "KeeperSkill"),
+            XmlV5.Int(p, "DefenderSkill"),
+            XmlV5.Int(p, "PlaymakerSkill"),
+            XmlV5.Int(p, "PassingSkill"),
+            XmlV5.Int(p, "WingerSkill"),
+            XmlV5.Int(p, "ScorerSkill"),
+            XmlV5.Int(p, "StaminaSkill"),
+            XmlV5.Int(p, "PlayerForm"),
+            XmlV5.Int(p, "Experience"),
+            XmlV5.Int(p, "Loyalty"),
+            XmlV5.Int(p, "InjuryLevel"),
+            ParseSpecialty(XmlV5.Text(p, "Specialty")),
+            XmlV5.Int(p, "SetPiecesSkill"))
+        {
+            FirstName = XmlV5.Text(p, "FirstName"),
+            LastName = XmlV5.Text(p, "LastName"),
+            Age = XmlV5.Int(p, "Age"),
+            AgeDays = XmlV5.Int(p, "AgeDays"),
+            Tsi = XmlV5.Int(p, "TSI"),
+            Salary = XmlV5.Int(p, "Salary"),
+            Leadership = XmlV5.Int(p, "Leadership"),
+            ShirtNumber = XmlV5.Int(p, "ShirtNumber"),
+            Cards = XmlV5.Int(p, "Cards"),
+            LastMatchDate = XmlV5.Text(p, "LastMatchDate"),
+            LastMatchRating = XmlV5.Double(p, "LastMatchRating"),
+            ArrivalDate = XmlV5.Text(p, "ArrivalDate"),
+            Nationality = XmlV5.Text(p, "Nationality")
+        };
+
+        return player;
+    }
 
     private static PlayerSpecialty ParseSpecialty(string value)
         => Enum.TryParse<PlayerSpecialty>(value, true, out var specialty) ? specialty : PlayerSpecialty.None;
