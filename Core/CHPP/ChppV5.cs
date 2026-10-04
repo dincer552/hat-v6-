@@ -4,7 +4,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace HattrickAI.V5.Core;
 
@@ -26,14 +25,13 @@ public sealed class ChppV5
     private readonly Credentials _credentials;
     private readonly IHttpContextAccessor _context;
     private readonly ChppDebugLog _log;
-    private readonly IMemoryCache _oauthCache;
+    private static readonly ConcurrentDictionary<string, (string Secret, DateTimeOffset Expires)> OAuthRequestSecrets = new(StringComparer.Ordinal);
 
-    public ChppV5(Credentials credentials, IHttpContextAccessor context, ChppDebugLog log, IMemoryCache oauthCache)
+    public ChppV5(Credentials credentials, IHttpContextAccessor context, ChppDebugLog log)
     {
         _credentials = credentials;
         _context = context;
         _log = log;
-        _oauthCache = oauthCache;
         _http = new HttpClient(new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
@@ -85,7 +83,7 @@ public sealed class ChppV5
         _log.Info("05-REQUEST-TOKEN", "oauth_token + oauth_token_secret başarıyla alındı.");
         Session.SetString("v6.request", token);
         Session.SetString("v6.requestSecret", secret);
-        _oauthCache.Set($"chpp:request-secret:{token}", secret, TimeSpan.FromMinutes(15));
+        OAuthRequestSecrets[token] = (secret, DateTimeOffset.UtcNow.AddMinutes(15));
         Session.SetString("v6.requestedScopes", RequestedScopes);
         _log.Info("05-SESSION", "Request token ve request secret session'a kaydedildi; scope hazırlandı.");
         Session.Remove(GrantedScopesSessionKey);
@@ -103,7 +101,8 @@ public sealed class ChppV5
         var secret = Session.GetString("v6.requestSecret");
         if (string.IsNullOrWhiteSpace(secret))
         {
-            secret = _oauthCache.Get<string>($"chpp:request-secret:{token}");
+            if (OAuthRequestSecrets.TryGetValue(token, out var cached) && cached.Expires > DateTimeOffset.UtcNow)
+                secret = cached.Secret;
             if (!string.IsNullOrWhiteSpace(secret))
                 _log.Info("08-SESSION", "Request secret session'da yoktu; OAuth kısa süreli cache'den geri alındı.");
         }
@@ -157,7 +156,7 @@ public sealed class ChppV5
         Session.Remove("v6.request");
         Session.Remove("v6.requestSecret");
         Session.Remove("v6.requestedScopes");
-        _oauthCache.Remove($"chpp:request-secret:{token}");
+        OAuthRequestSecrets.TryRemove(token, out _);
         _log.Info("14-COMPLETE", "CHPP bağlantı bilgileri session'a kaydedildi; OAuth bağlantısı tamamlandı.");
     }
 
