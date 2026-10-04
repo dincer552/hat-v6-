@@ -54,7 +54,16 @@ public sealed class ChppV5
         using var response = await _http.SendAsync(request, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
         if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"CHPP request token alınamadı: {body}");
+        {
+            var oauth2 = CreateOAuth(callback, null, null);
+            var signed2 = Sign("GET", RequestTokenUrl, oauth2, null, null);
+            using var fallback = CreateRequest(HttpMethod.Get, RequestTokenUrl, signed2.AuthorizationHeader);
+            using var response2 = await _http.SendAsync(fallback, ct);
+            var body2 = await response2.Content.ReadAsStringAsync(ct);
+            if (!response2.IsSuccessStatusCode)
+                throw new HttpRequestException($"CHPP request token alınamadı. İlk yanıt: {body} İkinci yanıt: {body2}");
+            body = body2;
+        }
         var values = ParseForm(body);
         if (!values.TryGetValue("oauth_token", out var token) || !values.TryGetValue("oauth_token_secret", out var secret))
             throw new InvalidOperationException($"CHPP request token yanıtı beklenen formatta değil: {body}");
@@ -80,7 +89,16 @@ public sealed class ChppV5
         using var response = await _http.SendAsync(request, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
         if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"CHPP access token alınamadı: {body}");
+        {
+            var oauth2 = CreateOAuth(null, token, verifier);
+            var signed2 = Sign("GET", AccessTokenUrl, oauth2, secret, null);
+            using var fallback = CreateRequest(HttpMethod.Get, AccessTokenUrl, signed2.AuthorizationHeader);
+            using var response2 = await _http.SendAsync(fallback, ct);
+            var body2 = await response2.Content.ReadAsStringAsync(ct);
+            if (!response2.IsSuccessStatusCode)
+                throw new HttpRequestException($"CHPP access token alınamadı. İlk yanıt: {body} İkinci yanıt: {body2}");
+            body = body2;
+        }
         var values = ParseForm(body);
         if (!values.TryGetValue("oauth_token", out var access) || !values.TryGetValue("oauth_token_secret", out var accessSecret))
             throw new InvalidOperationException($"CHPP access token yanıtı beklenen formatta değil: {body}");
