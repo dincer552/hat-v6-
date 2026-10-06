@@ -3,98 +3,188 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HattrickAI V6 · Genel A–E</title>
+<title>HattrickAI V6 · Genel (tam)</title>
 <style>
-:root{--bg:#eef3f0;--card:#fff;--ink:#1c2925;--muted:#69756f;--g:#19804c;--line:#d7e3db}
+:root{--bg:#eef3f0;--card:#fff;--ink:#1c2925;--muted:#69756f;--g:#19804c;--line:#d7e3db;--hi:#fff8e6}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
-.wrap{max-width:1100px;margin:0 auto;padding:14px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.wrap{max-width:100%;margin:0 auto;padding:12px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .top a{color:var(--g);text-decoration:none;font-weight:800;font-size:13px}
-.card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 3px 14px #0001;margin-bottom:12px}
-.brand{font-size:22px;font-weight:900}.brand span{color:var(--g)}
-.sub{color:var(--muted);font-size:12px;margin-top:4px}
-.controls{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:8px;margin-top:12px}
-.controls select,.controls input{height:38px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-size:13px}
-.btn{border:0;border-radius:9px;background:var(--g);color:#fff;padding:0 14px;font-weight:900;cursor:pointer;height:38px;font-size:12px}
+.card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 3px 14px #0001;margin-bottom:10px}
+.brand{font-size:20px;font-weight:900}.brand span{color:var(--g)}
+.sub{color:var(--muted);font-size:12px;margin-top:3px}
+.controls{display:grid;grid-template-columns:1.1fr 1.1fr 1fr auto auto;gap:7px;margin-top:10px}
+.controls select,.controls input{height:36px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:12px}
+.btn{border:0;border-radius:8px;background:var(--g);color:#fff;padding:0 12px;font-weight:900;cursor:pointer;height:36px;font-size:11px}
 .btn.secondary{background:#eef5f0;color:var(--g);border:1px solid #c5d9cc}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:70vh;margin-top:12px}
-table{border-collapse:collapse;width:100%;min-width:720px;font-size:12px}
-th,td{border-bottom:1px solid #e8efea;padding:7px 8px;text-align:left}
-th{position:sticky;top:0;background:#f4f8f5;font-size:11px;color:#4d5a54;z-index:1}
+.coach{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px}
+.coach input{width:70px;height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:72vh;margin-top:10px}
+table{border-collapse:collapse;width:100%;min-width:1600px;font-size:11px}
+th,td{border-bottom:1px solid #e8efea;padding:5px 6px;text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:#f4f8f5;font-size:10px;color:#4d5a54;z-index:2}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 tr:hover td{background:#f7fbf8}
+td.calc{background:#fafcf9}
+td.mcol{background:var(--hi);font-weight:800}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e8f4ec;color:#1d6b42;font-size:10px;font-weight:900}
-.meta{font-size:11px;color:var(--muted);margin-top:8px}
-.player-hint{font-size:11px;color:var(--muted);margin-top:6px}
-.empty{padding:24px;text-align:center;color:var(--muted)}
-@media(max-width:700px){.controls{grid-template-columns:1fr 1fr}}
+.meta,.hint{font-size:11px;color:var(--muted);margin-top:6px}
+.empty{padding:20px;text-align:center;color:var(--muted)}
+.legend{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.45}
+@media(max-width:900px){.controls{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <main class="wrap">
   <div class="top">
     <a href="/hattrick.html">← Oyuncular</a>
-    <span style="font-size:12px;color:#69756f">HattrickAI V6 · Genel A–E</span>
+    <span style="font-size:12px;color:#69756f">HattrickAI V6 · Genel A–X tam hesap</span>
   </div>
   <section class="card">
-    <div class="brand">Genel <span>A–E</span></div>
-    <div class="sub">Excel Genel: A Pozisyon · B Rating bölgesi · C Oyuncu özelliği · D Oyuncu değeri · E Katsayı</div>
+    <div class="brand">Genel <span>tam motor</span></div>
+    <div class="sub">Excel Genel sekmesi A–X: tüm satırlar, formüller ve hesaplanan sonuçlar</div>
     <div class="controls">
       <select id="pos"><option value="">Tüm pozisyonlar</option></select>
-      <select id="player"><option value="">Oyuncu seç (D sütunu)</option></select>
+      <select id="player"><option value="">Oyuncu seç</option></select>
       <input id="search" placeholder="Ara (sektör / skill)…">
-      <button class="btn secondary" id="reload" type="button">CHPP YENİLE</button>
+      <button class="btn secondary" id="reload" type="button">CHPP</button>
+      <button class="btn secondary" id="jsonBtn" type="button">JSON</button>
     </div>
-    <div class="player-hint" id="hint">Katsayı tablosu yükleniyor…</div>
+    <div class="coach">
+      <label>Koç Lv (R)</label>
+      <input id="coach" type="number" step="1" value="0">
+      <span id="coachR" class="badge">R=1.02</span>
+      <span class="hint" id="hint">Veri yükleniyor…</span>
+    </div>
   </section>
   <section class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-      <b>Katsayı tablosu</b>
+      <b>Genel hesap tablosu</b>
       <span class="badge" id="count">0 satır</span>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>A · Pozisyon</th>
-            <th>B · Rating bölgesi</th>
-            <th>C · Oyuncu özelliği</th>
-            <th class="num">D · Oyuncu değeri</th>
-            <th class="num">E · Katsayı</th>
-            <th class="num">D×E</th>
+            <th>A Pozisyon</th>
+            <th>B Bölge</th>
+            <th>C Skill</th>
+            <th class="num">D Değer</th>
+            <th class="num">E Katsayı</th>
+            <th class="num">F Form</th>
+            <th class="num">G Kond</th>
+            <th class="num">H Exp</th>
+            <th class="num">I FormF</th>
+            <th class="num">J Etkin</th>
+            <th class="num">K ExpKat</th>
+            <th class="num">L Ham</th>
+            <th class="num">M Bölge</th>
+            <th class="num">N ExpÇarp</th>
+            <th class="num">O SideDEF</th>
+            <th class="num">P CentDEF</th>
+            <th class="num">Q MidPM</th>
+            <th class="num">R Koç</th>
+            <th class="num">ss scale</th>
+            <th class="num">V üs</th>
           </tr>
         </thead>
-        <tbody id="tbody"><tr><td colspan="6" class="empty">Yükleniyor…</td></tr></tbody>
+        <tbody id="tbody"><tr><td colspan="20" class="empty">Yükleniyor…</td></tr></tbody>
       </table>
     </div>
-    <div class="meta" id="meta">Kaynak: HatFor Genel A–E</div>
+    <div class="legend">
+      I=0.378×√min(7,Form−1) · J=max(0,D−1)+Loyalty · K=polinom(Exp−1)×N · L=J×I×E+K ·
+      R=1.02−(Koç≤0?Koç×0.13/10:Koç×0.12/10) · M=L&gt;0 ? ROUND(((L×R×ss)^V/4+1)×4)/4 : 0.75
+    </div>
+    <div class="meta" id="meta">Kaynak: HatFor Genel A–X</div>
   </section>
 </main>
-<script src="/genel-ae-data.js"></script>
+<script src="/genel-full-data.js"></script>
 <script>
 const SKILL_MAP={Goalkeeping:'keeper',Defending:'defending',Playmaking:'playmaking',Passing:'passing',Winger:'winger',Scoring:'scoring',SetPieces:'setPieces',Stamina:'stamina'};
-let ROWS=[], players=[];
+let ROWS=[], players=[], lastCalc=[];
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
-function fmt(v){return Number.isFinite(v)?(Math.round(v*1000)/1000):'—';}
-function skillValue(player,skillName){if(!player)return null;const key=SKILL_MAP[skillName];if(!key)return null;return num(player[key]);}
-function selectedPlayer(){const id=Number(document.getElementById('player').value||0);return players.find(p=>p.id===id)||null;}
+function fmt(v,d=3){if(v==null||!Number.isFinite(v))return '—';const x=Math.round(v*Math.pow(10,d))/Math.pow(10,d);return String(x);}
+function formF(form){return 0.378*Math.sqrt(Math.min(7,Math.max(0,num(form)-1)));}
+function expPoly(exp){
+  const x=Math.max(0,num(exp)-1);
+  return (-0.00000725*Math.pow(x,4)+0.0005*Math.pow(x,3)-0.01336*Math.pow(x,2)+0.176*x);
+}
+function coachR(lv){
+  const c=num(lv);
+  return 1.02-(c<=0?c*0.13/10:c*0.12/10);
+}
+function quarterRound(v){return Math.round(v*4)/4;}
+function skillOf(pl, name){
+  if(!pl) return null;
+  const k=SKILL_MAP[name];
+  if(!k) return null;
+  return num(pl[k]);
+}
+function selectedPlayer(){
+  const id=Number(document.getElementById('player').value||0);
+  return players.find(p=>p.id===id)||null;
+}
+function calcRow(r, pl, R){
+  const D=skillOf(pl,r.sk);
+  const F=pl?num(pl.form):null;
+  const G=pl?num(pl.stamina):null;
+  const H=pl?num(pl.experience):null;
+  const loy=pl?num(pl.loyalty):0;
+  const I=(F==null)?null:formF(F);
+  const J=(D==null)?null:Math.max(0,num(D)-1)+loy;
+  const N=num(r.n);
+  const K=(H==null)?null:expPoly(H)*N;
+  const E=num(r.k);
+  const L=(J==null||I==null||K==null)?null:(J*I*E+K);
+  const ss=num(r.ss), V=num(r.v);
+  let M=0.75;
+  if(L!=null && L>0){
+    M=quarterRound(Math.pow(L*R*ss, V)/4+1);
+  } else if(L==null){
+    M=null;
+  }
+  return {D,E,F,G,H,I,J,K,L,M,N,O:r.o,P:r.p,Q:r.q,R,ss,V};
+}
 function render(){
   const pos=document.getElementById('pos').value;
   const q=(document.getElementById('search').value||'').toLocaleLowerCase('tr-TR');
   const pl=selectedPlayer();
+  const R=coachR(document.getElementById('coach').value);
+  document.getElementById('coachR').textContent='R='+fmt(R,4);
   let list=ROWS;
   if(pos) list=list.filter(r=>r.pos===pos);
-  if(q) list=list.filter(r=>(r.pos+' '+r.sector+' '+r.skill).toLocaleLowerCase('tr-TR').includes(q));
+  if(q) list=list.filter(r=>(r.pos+' '+r.sec+' '+r.sk).toLocaleLowerCase('tr-TR').includes(q));
+  lastCalc=list.map(r=>({row:r, c:calcRow(r,pl,R)}));
   const tb=document.getElementById('tbody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="6" class="empty">Satır yok</td></tr>';document.getElementById('count').textContent='0 satır';return;}
-  tb.innerHTML=list.map(r=>{
-    const d=skillValue(pl,r.skill); const e=num(r.k); const prod=(d==null)?null:d*e;
-    return `<tr><td><b>${esc(r.pos)}</b></td><td>${esc(r.sector)}</td><td>${esc(r.skill)}</td><td class="num">${d==null?'—':d}</td><td class="num">${fmt(e)}</td><td class="num">${prod==null?'—':fmt(prod)}</td></tr>`;
-  }).join('');
-  document.getElementById('count').textContent=list.length+' satır';
-  document.getElementById('meta').textContent=pl?('Oyuncu: '+pl.name+' · D=CHPP skill · E=Excel katsayı'):'Oyuncu seçilmedi — D boş; E Excel Genel’den.';
+  if(!lastCalc.length){tb.innerHTML='<tr><td colspan="20" class="empty">Satır yok</td></tr>';document.getElementById('count').textContent='0';return;}
+  tb.innerHTML=lastCalc.map(({row:r,c})=>`<tr>
+    <td><b>${esc(r.pos)}</b></td>
+    <td>${esc(r.sec)}</td>
+    <td>${esc(r.sk)}</td>
+    <td class="num calc">${c.D==null?'—':c.D}</td>
+    <td class="num">${fmt(c.E)}</td>
+    <td class="num calc">${c.F==null?'—':c.F}</td>
+    <td class="num calc">${c.G==null?'—':c.G}</td>
+    <td class="num calc">${c.H==null?'—':c.H}</td>
+    <td class="num calc">${fmt(c.I)}</td>
+    <td class="num calc">${fmt(c.J)}</td>
+    <td class="num calc">${fmt(c.K,4)}</td>
+    <td class="num calc">${fmt(c.L,4)}</td>
+    <td class="num mcol">${c.M==null?'—':fmt(c.M,2)}</td>
+    <td class="num">${fmt(c.N)}</td>
+    <td class="num">${fmt(c.O)}</td>
+    <td class="num">${fmt(c.P)}</td>
+    <td class="num">${fmt(c.Q)}</td>
+    <td class="num">${fmt(c.R,4)}</td>
+    <td class="num">${fmt(c.ss)}</td>
+    <td class="num">${fmt(c.V)}</td>
+  </tr>`).join('');
+  document.getElementById('count').textContent=lastCalc.length+' satır';
+  document.getElementById('meta').textContent=pl
+    ? ('Oyuncu: '+pl.name+' · Form '+pl.form+' · Exp '+pl.experience+' · Loy '+pl.loyalty+' · KoçR '+fmt(R,4))
+    : 'Oyuncu seçilmedi — D/F/G/H ve türetilenler boş; E/N/O/P/Q/ss sabit.';
 }
 function fillPos(){
   const sel=document.getElementById('pos');
@@ -103,10 +193,10 @@ function fillPos(){
 }
 function fillPlayers(){
   const sel=document.getElementById('player'); const cur=sel.value;
-  sel.innerHTML='<option value="">Oyuncu seç (D sütunu)</option>';
+  sel.innerHTML='<option value="">Oyuncu seç</option>';
   players.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'tr')).forEach(p=>{
     const o=document.createElement('option'); o.value=String(p.id);
-    o.textContent=p.name+' (DEF '+num(p.defending)+' · PM '+num(p.playmaking)+')';
+    o.textContent=p.name+' (DEF '+num(p.defending)+' PM '+num(p.playmaking)+')';
     sel.appendChild(o);
   });
   if(cur) sel.value=cur;
@@ -123,14 +213,14 @@ async function loadPlayers(){
     const t=await r.text(); let d={}; try{d=t?JSON.parse(t):{};}catch{throw new Error('JSON hatası');}
     if(!r.ok) throw new Error(d.message||d.detail||('HTTP '+r.status));
     players=(d.players||[]).map(normalizePlayer); fillPlayers();
-    document.getElementById('hint').textContent=players.length?(players.length+' CHPP oyuncu · seçince D dolar'):'Oyuncu listesi boş';
+    document.getElementById('hint').textContent=players.length?(players.length+' CHPP oyuncu'):'Oyuncu yok';
     render();
-  }catch(e){document.getElementById('hint').textContent='CHPP: '+e.message+' (E katsayıları yine görünür)'; render();}
+  }catch(e){document.getElementById('hint').textContent='CHPP: '+e.message; render();}
 }
 async function boot(){
   try{
-    if(!window.GENEL_AE_HEX) throw new Error('GENEL_AE_HEX yok');
-    const hex=window.GENEL_AE_HEX;
+    if(!window.GENEL_FULL_HEX) throw new Error('GENEL_FULL_HEX yok');
+    const hex=window.GENEL_FULL_HEX;
     const bin=new Uint8Array(hex.length/2);
     for(let i=0;i<bin.length;i++) bin[i]=parseInt(hex.substr(i*2,2),16);
     const ds=new DecompressionStream('gzip');
@@ -138,9 +228,9 @@ async function boot(){
     const text=await new Response(stream).text();
     ROWS=JSON.parse(text);
     fillPos(); render();
-    document.getElementById('hint').textContent=ROWS.length+' katsayı satırı yüklendi. CHPP oyuncu seçerek D doldur.';
+    document.getElementById('hint').textContent=ROWS.length+' Genel satır yüklendi';
   }catch(e){
-    document.getElementById('tbody').innerHTML='<tr><td colspan="6" class="empty">Veri yüklenemedi: '+esc(e.message)+'</td></tr>';
+    document.getElementById('tbody').innerHTML='<tr><td colspan="20" class="empty">'+esc(e.message)+'</td></tr>';
     document.getElementById('hint').textContent=e.message;
   }
   loadPlayers();
@@ -148,7 +238,14 @@ async function boot(){
 document.getElementById('pos').onchange=render;
 document.getElementById('player').onchange=render;
 document.getElementById('search').oninput=render;
+document.getElementById('coach').oninput=render;
 document.getElementById('reload').onclick=loadPlayers;
+document.getElementById('jsonBtn').onclick=()=>{
+  const payload={schema:'hattrickai-genel-full-v1',coachLv:Number(document.getElementById('coach').value||0),coachR:coachR(document.getElementById('coach').value),
+    player:selectedPlayer(),rows:lastCalc.map(({row,c})=>({pos:row.pos,sector:row.sec,skill:row.sk,...c}))};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='genel-calc.json'; a.click();
+};
 boot();
 </script>
 </body>
