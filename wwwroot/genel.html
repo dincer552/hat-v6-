@@ -39,14 +39,14 @@ tr:hover td{background:#f7fbf8}
   </div>
   <section class="card">
     <div class="brand">Genel <span>A–E</span></div>
-    <div class="sub">Excel Genel sekmesi: A Pozisyon · B Rating bölgesi · C Oyuncu özelliği · D Oyuncu değeri · E Katsayı</div>
+    <div class="sub">Excel Genel: A Pozisyon · B Rating bölgesi · C Oyuncu özelliği · D Oyuncu değeri · E Katsayı</div>
     <div class="controls">
       <select id="pos"><option value="">Tüm pozisyonlar</option></select>
       <select id="player"><option value="">Oyuncu seç (D sütunu)</option></select>
       <input id="search" placeholder="Ara (sektör / skill)…">
       <button class="btn secondary" id="reload" type="button">CHPP YENİLE</button>
     </div>
-    <div class="player-hint" id="hint">D sütunu: seçilen oyuncunun skill değeri (Excel INDEX/MATCH yerine CHPP).</div>
+    <div class="player-hint" id="hint">Katsayı tablosu yükleniyor…</div>
   </section>
   <section class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
@@ -65,134 +65,85 @@ tr:hover td{background:#f7fbf8}
             <th class="num">D×E</th>
           </tr>
         </thead>
-        <tbody id="tbody"></tbody>
+        <tbody id="tbody"><tr><td colspan="6" class="empty">Yükleniyor…</td></tr></tbody>
       </table>
     </div>
-    <div class="meta" id="meta">Kaynak: HatFor Genel A–E katsayı satırları</div>
+    <div class="meta" id="meta">Kaynak: HatFor Genel A–E</div>
   </section>
 </main>
 <script>
-const ROWS = PLACEHOLDER_ROWS;
-const SKILL_MAP = {
-  Goalkeeping: 'keeper',
-  Defending: 'defending',
-  Playmaking: 'playmaking',
-  Passing: 'passing',
-  Winger: 'winger',
-  Scoring: 'scoring',
-  SetPieces: 'setPieces',
-  Stamina: 'stamina'
-};
-let players = [];
-
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#039;'}[m]));}
+const SKILL_MAP={Goalkeeping:'keeper',Defending:'defending',Playmaking:'playmaking',Passing:'passing',Winger:'winger',Scoring:'scoring',SetPieces:'setPieces',Stamina:'stamina'};
+let ROWS=[], players=[];
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 function fmt(v){return Number.isFinite(v)?(Math.round(v*1000)/1000):'—';}
-
-function skillValue(player, skillName){
-  if(!player) return null;
-  const key = SKILL_MAP[skillName];
-  if(!key) return null;
-  return num(player[key]);
-}
-
-function selectedPlayer(){
-  const id = Number(document.getElementById('player').value||0);
-  return players.find(p=>p.id===id)||null;
-}
-
+function skillValue(player,skillName){if(!player)return null;const key=SKILL_MAP[skillName];if(!key)return null;return num(player[key]);}
+function selectedPlayer(){const id=Number(document.getElementById('player').value||0);return players.find(p=>p.id===id)||null;}
 function render(){
-  const pos = document.getElementById('pos').value;
-  const q = (document.getElementById('search').value||'').toLocaleLowerCase('tr-TR');
-  const pl = selectedPlayer();
-  let list = ROWS;
-  if(pos) list = list.filter(r=>r.pos===pos);
-  if(q) list = list.filter(r=> (r.pos+' '+r.sector+' '+r.skill).toLocaleLowerCase('tr-TR').includes(q));
-  const tb = document.getElementById('tbody');
+  const pos=document.getElementById('pos').value;
+  const q=(document.getElementById('search').value||'').toLocaleLowerCase('tr-TR');
+  const pl=selectedPlayer();
+  let list=ROWS;
+  if(pos) list=list.filter(r=>r.pos===pos);
+  if(q) list=list.filter(r=>(r.pos+' '+r.sector+' '+r.skill).toLocaleLowerCase('tr-TR').includes(q));
+  const tb=document.getElementById('tbody');
   if(!list.length){tb.innerHTML='<tr><td colspan="6" class="empty">Satır yok</td></tr>';document.getElementById('count').textContent='0 satır';return;}
-  tb.innerHTML = list.map(r=>{
-    const d = skillValue(pl, r.skill);
-    const e = num(r.k);
-    const prod = (d==null)? null : d*e;
-    return `<tr>
-      <td><b>${esc(r.pos)}</b></td>
-      <td>${esc(r.sector)}</td>
-      <td>${esc(r.skill)}</td>
-      <td class="num">${d==null?'—':d}</td>
-      <td class="num">${fmt(e)}</td>
-      <td class="num">${prod==null?'—':fmt(prod)}</td>
-    </tr>`;
+  tb.innerHTML=list.map(r=>{
+    const d=skillValue(pl,r.skill); const e=num(r.k); const prod=(d==null)?null:d*e;
+    return `<tr><td><b>${esc(r.pos)}</b></td><td>${esc(r.sector)}</td><td>${esc(r.skill)}</td><td class="num">${d==null?'—':d}</td><td class="num">${fmt(e)}</td><td class="num">${prod==null?'—':fmt(prod)}</td></tr>`;
   }).join('');
-  document.getElementById('count').textContent = list.length+' satır';
-  document.getElementById('meta').textContent = pl
-    ? ('Oyuncu: '+pl.name+' · D sütunu CHPP skill · E Excel katsayısı')
-    : 'Oyuncu seçilmedi — D sütunu boş; E katsayıları Excel Genel’den.';
+  document.getElementById('count').textContent=list.length+' satır';
+  document.getElementById('meta').textContent=pl?('Oyuncu: '+pl.name+' · D=CHPP skill · E=Excel katsayı'):'Oyuncu seçilmedi — D boş; E Excel Genel’den.';
 }
-
 function fillPos(){
   const sel=document.getElementById('pos');
-  const set=[];
-  ROWS.forEach(r=>{if(!set.includes(r.pos)) set.push(r.pos);});
+  const set=[]; ROWS.forEach(r=>{if(!set.includes(r.pos)) set.push(r.pos);});
   set.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});
 }
-
 function fillPlayers(){
-  const sel=document.getElementById('player');
-  const cur=sel.value;
+  const sel=document.getElementById('player'); const cur=sel.value;
   sel.innerHTML='<option value="">Oyuncu seç (D sütunu)</option>';
   players.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'tr')).forEach(p=>{
-    const o=document.createElement('option');
-    o.value=String(p.id);
+    const o=document.createElement('option'); o.value=String(p.id);
     o.textContent=p.name+' (DEF '+num(p.defending)+' · PM '+num(p.playmaking)+')';
     sel.appendChild(o);
   });
   if(cur) sel.value=cur;
 }
-
 function normalizePlayer(p){
-  return {
-    id:num(p.id||p.playerId),
-    name:p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||('#'+(p.id||'')),
-    keeper:num(p.keeper??p.goalkeeping),
-    defending:num(p.defending),
-    playmaking:num(p.playmaking),
-    passing:num(p.passing),
-    winger:num(p.winger),
-    scoring:num(p.scoring),
-    setPieces:num(p.setPieces),
-    stamina:num(p.stamina),
-    form:num(p.form),
-    experience:num(p.experience),
-    loyalty:num(p.loyalty)
-  };
+  return {id:num(p.id||p.playerId),name:p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||('#'+(p.id||'')),
+    keeper:num(p.keeper??p.goalkeeping),defending:num(p.defending),playmaking:num(p.playmaking),
+    passing:num(p.passing),winger:num(p.winger),scoring:num(p.scoring),setPieces:num(p.setPieces),
+    stamina:num(p.stamina),form:num(p.form),experience:num(p.experience),loyalty:num(p.loyalty)};
 }
-
 async function loadPlayers(){
-  document.getElementById('hint').textContent='CHPP oyuncuları yükleniyor…';
   try{
     const r=await fetch('/api/v5/team-player-export',{cache:'no-store',credentials:'same-origin'});
-    const t=await r.text();
-    let d={}; try{d=t?JSON.parse(t):{};}catch{throw new Error('JSON hatası');}
+    const t=await r.text(); let d={}; try{d=t?JSON.parse(t):{};}catch{throw new Error('JSON hatası');}
     if(!r.ok) throw new Error(d.message||d.detail||('HTTP '+r.status));
-    players=(d.players||[]).map(normalizePlayer);
-    fillPlayers();
-    document.getElementById('hint').textContent=players.length
-      ? (players.length+' CHPP oyuncu yüklendi. Birini seç → D sütunu dolar.')
-      : 'Oyuncu listesi boş.';
+    players=(d.players||[]).map(normalizePlayer); fillPlayers();
+    document.getElementById('hint').textContent=players.length?(players.length+' CHPP oyuncu · seçince D dolar'):'Oyuncu listesi boş';
     render();
-  }catch(e){
-    document.getElementById('hint').textContent='CHPP yok veya hata: '+e.message+' (katsayılar yine görünür)';
-    render();
-  }
+  }catch(e){document.getElementById('hint').textContent='CHPP: '+e.message+' (E katsayıları yine görünür)'; render();}
 }
-
-fillPos();
+async function boot(){
+  try{
+    const r=await fetch('/genel-ae.json',{cache:'no-store'});
+    if(!r.ok) throw new Error('genel-ae.json HTTP '+r.status);
+    ROWS=await r.json();
+    fillPos(); render();
+    document.getElementById('hint').textContent=ROWS.length+' katsayı satırı yüklendi. CHPP oyuncu seçerek D doldur.';
+  }catch(e){
+    document.getElementById('tbody').innerHTML='<tr><td colspan="6" class="empty">Veri yüklenemedi: '+esc(e.message)+'</td></tr>';
+    document.getElementById('hint').textContent=e.message;
+  }
+  loadPlayers();
+}
 document.getElementById('pos').onchange=render;
 document.getElementById('player').onchange=render;
 document.getElementById('search').oninput=render;
 document.getElementById('reload').onclick=loadPlayers;
-render();
-loadPlayers();
+boot();
 </script>
 </body>
 </html>
