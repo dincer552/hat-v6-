@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HattrickAI V6 · Genel (tam)</title>
+<title>HattrickAI V6 · Genel Tüm Pozisyonlar</title>
 <style>
 :root{--bg:#eef3f0;--card:#fff;--ink:#1c2925;--muted:#69756f;--g:#19804c;--line:#d7e3db;--hi:#fff8e6}
 *{box-sizing:border-box}
@@ -14,118 +14,117 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,
 .card{background:var(--card);border-radius:14px;padding:12px;box-shadow:0 3px 14px #0001;margin-bottom:10px}
 .brand{font-size:20px;font-weight:900}.brand span{color:var(--g)}
 .sub{color:var(--muted);font-size:12px;margin-top:3px}
-.controls{display:grid;grid-template-columns:1.1fr 1.1fr 1fr auto auto;gap:7px;margin-top:10px}
-.controls select,.controls input{height:36px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:12px}
-.btn{border:0;border-radius:8px;background:var(--g);color:#fff;padding:0 12px;font-weight:900;cursor:pointer;height:36px;font-size:11px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+select,input{height:34px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:12px}
+.btn{border:0;border-radius:8px;background:var(--g);color:#fff;padding:0 12px;font-weight:900;cursor:pointer;height:34px;font-size:11px}
 .btn.secondary{background:#eef5f0;color:var(--g);border:1px solid #c5d9cc}
-.coach{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px}
-.coach input{width:70px;height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:72vh;margin-top:10px}
-table{border-collapse:collapse;width:100%;min-width:1600px;font-size:11px}
-th,td{border-bottom:1px solid #e8efea;padding:5px 6px;text-align:left;white-space:nowrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e8f4ec;color:#1d6b42;font-size:10px;font-weight:900}
+.sectors{display:grid;grid-template-columns:repeat(7,minmax(90px,1fr));gap:6px;margin-top:10px}
+.sec{background:#f6faf7;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.sec b{display:block;font-size:16px}
+.sec span{font-size:10px;color:var(--muted)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:55vh;margin-top:10px}
+table{border-collapse:collapse;width:100%;min-width:1500px;font-size:11px}
+th,td{border-bottom:1px solid #e8efea;padding:5px 6px;white-space:nowrap;text-align:left}
 th{position:sticky;top:0;background:#f4f8f5;font-size:10px;color:#4d5a54;z-index:2}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-tr:hover td{background:#f7fbf8}
-td.calc{background:#fafcf9}
 td.mcol{background:var(--hi);font-weight:800}
-.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e8f4ec;color:#1d6b42;font-size:10px;font-weight:900}
-.meta,.hint{font-size:11px;color:var(--muted);margin-top:6px}
-.empty{padding:20px;text-align:center;color:var(--muted)}
-.legend{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.45}
-@media(max-width:900px){.controls{grid-template-columns:1fr 1fr}}
+td.calc{background:#fafcf9}
+tr:hover td{background:#f7fbf8}
+.slotgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:10px}
+.slot{border:1px solid var(--line);border-radius:10px;padding:8px;background:#fbfdfa}
+.slot label{display:block;font-size:10px;font-weight:900;color:#4d5a54;margin-bottom:4px}
+.slot select{width:100%;margin-top:4px}
+.hint{font-size:11px;color:var(--muted);margin-top:6px}
+.legend{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4}
+.poslist{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;max-height:120px;overflow:auto}
+.poschip{font-size:10px;padding:3px 7px;border-radius:999px;background:#eef5f0;border:1px solid #c5d9cc;cursor:pointer}
+.poschip.on{background:#19804c;color:#fff;border-color:#19804c}
+@media(max-width:900px){.sectors{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <main class="wrap">
   <div class="top">
     <a href="/hattrick.html">← Oyuncular</a>
-    <span style="font-size:12px;color:#69756f">HattrickAI V6 · Genel A–X tam hesap</span>
+    <span style="font-size:12px;color:#69756f">HattrickAI V6 · Tüm pozisyonlar + formüller</span>
   </div>
+
   <section class="card">
-    <div class="brand">Genel <span>tam motor</span></div>
-    <div class="sub">Excel Genel sekmesi A–X: tüm satırlar, formüller ve hesaplanan sonuçlar</div>
-    <div class="controls">
-      <select id="pos"><option value="">Tüm pozisyonlar</option></select>
-      <select id="player"><option value="">Oyuncu seç</option></select>
-      <input id="search" placeholder="Ara (sektör / skill)…">
-      <button class="btn secondary" id="reload" type="button">CHPP</button>
+    <div class="brand">Genel <span>tüm pozisyonlar</span></div>
+    <div class="sub">Excel Genel: 44 pozisyon × tüm emirler × A–X formülleri · formasyon kadrosu ile sektör toplamı</div>
+    <div class="row">
+      <select id="formation"></select>
+      <input id="coach" type="number" step="1" value="0" title="Koç seviyesi" style="width:70px">
+      <span class="badge" id="coachR">R=1.02</span>
+      <button class="btn secondary" id="reload" type="button">CHPP YENİLE</button>
       <button class="btn secondary" id="jsonBtn" type="button">JSON</button>
+      <span class="badge" id="count">0</span>
     </div>
-    <div class="coach">
-      <label>Koç Lv (R)</label>
-      <input id="coach" type="number" step="1" value="0">
-      <span id="coachR" class="badge">R=1.02</span>
-      <span class="hint" id="hint">Veri yükleniyor…</span>
-    </div>
+    <div class="hint" id="hint">Veri yükleniyor…</div>
+    <div class="poslist" id="poslist"></div>
   </section>
+
+  <section class="card">
+    <b>Kadro (formasyon pozisyonları)</b>
+    <div class="slotgrid" id="slots"></div>
+    <div class="sectors" id="sectors"></div>
+  </section>
+
   <section class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-      <b>Genel hesap tablosu</b>
-      <span class="badge" id="count">0 satır</span>
+      <b>Genel satır hesapları</b>
+      <div class="row" style="margin:0">
+        <select id="filterPos"><option value="">Tüm pozisyon varyantları</option></select>
+        <input id="search" placeholder="Ara…" style="min-width:140px">
+      </div>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>A Pozisyon</th>
-            <th>B Bölge</th>
-            <th>C Skill</th>
-            <th class="num">D Değer</th>
-            <th class="num">E Katsayı</th>
-            <th class="num">F Form</th>
-            <th class="num">G Kond</th>
-            <th class="num">H Exp</th>
-            <th class="num">I FormF</th>
-            <th class="num">J Etkin</th>
-            <th class="num">K ExpKat</th>
-            <th class="num">L Ham</th>
-            <th class="num">M Bölge</th>
-            <th class="num">N ExpÇarp</th>
-            <th class="num">O SideDEF</th>
-            <th class="num">P CentDEF</th>
-            <th class="num">Q MidPM</th>
-            <th class="num">R Koç</th>
-            <th class="num">ss scale</th>
-            <th class="num">V üs</th>
+            <th>A Pozisyon</th><th>B Bölge</th><th>C Skill</th>
+            <th class="num">D</th><th class="num">E</th><th class="num">F</th><th class="num">G</th><th class="num">H</th>
+            <th class="num">I FormF</th><th class="num">J Etkin</th><th class="num">K ExpKat</th><th class="num">L Ham</th>
+            <th class="num">M Bölge</th><th class="num">N</th><th class="num">O</th><th class="num">P</th><th class="num">Q</th>
+            <th class="num">R</th><th class="num">ss</th><th class="num">V</th>
           </tr>
         </thead>
-        <tbody id="tbody"><tr><td colspan="20" class="empty">Yükleniyor…</td></tr></tbody>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
-    <div class="legend">
-      I=0.378×√min(7,Form−1) · J=max(0,D−1)+Loyalty · K=polinom(Exp−1)×N · L=J×I×E+K ·
-      R=1.02−(Koç≤0?Koç×0.13/10:Koç×0.12/10) · M=L&gt;0 ? ROUND(((L×R×ss)^V/4+1)×4)/4 : 0.75
-    </div>
-    <div class="meta" id="meta">Kaynak: HatFor Genel A–X</div>
+    <div class="legend">I=0.378√min(7,F−1) · J=max(0,D−1)+Loy · K=poly(H−1)×N · L=J×I×E+K · R=1.02−koç · M=L&gt;0?¼yuvarla((L×R×ss)^V/4+1):0.75</div>
   </section>
 </main>
-<script src="/genel-full-data.js"></script>
+<script src="/genel-all-data.js"></script>
 <script>
 const SKILL_MAP={Goalkeeping:'keeper',Defending:'defending',Playmaking:'playmaking',Passing:'passing',Winger:'winger',Scoring:'scoring',SetPieces:'setPieces',Stamina:'stamina'};
-let ROWS=[], players=[], lastCalc=[];
+const SECTORS=['Left Defence','Central Defence','Right Defence','Midfield','Left Attack','Central Attack','Right Attack'];
+const SECTOR_SHORT={ 'Left Defence':'LD','Central Defence':'CD','Right Defence':'RD','Midfield':'MID','Left Attack':'LA','Central Attack':'CA','Right Attack':'RA'};
+let ROWS=[], POSITIONS=[], FORMATIONS={}, players=[], slotState={}, lastCalc=[];
+
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
-function fmt(v,d=3){if(v==null||!Number.isFinite(v))return '—';const x=Math.round(v*Math.pow(10,d))/Math.pow(10,d);return String(x);}
+function fmt(v,d=3){if(v==null||!Number.isFinite(+v))return '—';const x=Math.round(+v*Math.pow(10,d))/Math.pow(10,d);return String(x);}
 function formF(form){return 0.378*Math.sqrt(Math.min(7,Math.max(0,num(form)-1)));}
-function expPoly(exp){
-  const x=Math.max(0,num(exp)-1);
-  return (-0.00000725*Math.pow(x,4)+0.0005*Math.pow(x,3)-0.01336*Math.pow(x,2)+0.176*x);
+function expPoly(exp){const x=Math.max(0,num(exp)-1);return (-0.00000725*Math.pow(x,4)+0.0005*Math.pow(x,3)-0.01336*Math.pow(x,2)+0.176*x);}
+function coachR(lv){const c=num(lv);return 1.02-(c<=0?c*0.13/10:c*0.12/10);}
+function qRound(v){return Math.round(v*4)/4;}
+function skillOf(pl,name){if(!pl)return null;const k=SKILL_MAP[name];return k==null?null:num(pl[k]);}
+function playerById(id){return players.find(p=>p.id===Number(id))||null;}
+function ordersForBase(base){
+  if(base==='GK') return ['GK'];
+  const prefix=base+' ';
+  const found=POSITIONS.filter(p=>p===base||p.startsWith(prefix)).map(p=>p===base?'normal':p.slice(prefix.length));
+  const out=[]; found.forEach(o=>{if(!out.includes(o)) out.push(o);});
+  return out.length?out:['normal'];
 }
-function coachR(lv){
-  const c=num(lv);
-  return 1.02-(c<=0?c*0.13/10:c*0.12/10);
+function fullPos(base, order){
+  if(base==='GK') return 'GK';
+  return base+' '+(order||'normal');
 }
-function quarterRound(v){return Math.round(v*4)/4;}
-function skillOf(pl, name){
-  if(!pl) return null;
-  const k=SKILL_MAP[name];
-  if(!k) return null;
-  return num(pl[k]);
-}
-function selectedPlayer(){
-  const id=Number(document.getElementById('player').value||0);
-  return players.find(p=>p.id===id)||null;
-}
+function rowsForPos(full){return ROWS.filter(r=>r.pos===full);}
+
 function calcRow(r, pl, R){
   const D=skillOf(pl,r.sk);
   const F=pl?num(pl.form):null;
@@ -139,30 +138,97 @@ function calcRow(r, pl, R){
   const E=num(r.k);
   const L=(J==null||I==null||K==null)?null:(J*I*E+K);
   const ss=num(r.ss), V=num(r.v);
-  let M=0.75;
-  if(L!=null && L>0){
-    M=quarterRound(Math.pow(L*R*ss, V)/4+1);
-  } else if(L==null){
-    M=null;
-  }
+  let M=null;
+  if(L==null) M=null;
+  else if(L>0) M=qRound(Math.pow(L*R*ss,V)/4+1);
+  else M=0.75;
   return {D,E,F,G,H,I,J,K,L,M,N,O:r.o,P:r.p,Q:r.q,R,ss,V};
 }
-function render(){
-  const pos=document.getElementById('pos').value;
-  const q=(document.getElementById('search').value||'').toLocaleLowerCase('tr-TR');
-  const pl=selectedPlayer();
+
+function renderSlots(){
+  const form=document.getElementById('formation').value;
+  const slots=FORMATIONS[form]||[];
+  const box=document.getElementById('slots');
+  box.innerHTML=slots.map((base,idx)=>{
+    const st=slotState[form+'|'+idx]||{order:ordersForBase(base)[0], playerId:''};
+    const orders=ordersForBase(base);
+    if(!orders.includes(st.order)) st.order=orders[0];
+    slotState[form+'|'+idx]=st;
+    const ordOpts=orders.map(o=>`<option value="${esc(o)}" ${o===st.order?'selected':''}>${esc(o)}</option>`).join('');
+    const plOpts=['<option value="">— oyuncu —</option>'].concat(
+      players.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'tr'))
+        .map(p=>`<option value="${p.id}" ${String(p.id)===String(st.playerId)?'selected':''}>${esc(p.name)}</option>`)
+    ).join('');
+    return `<div class="slot" data-idx="${idx}">
+      <label>${esc(base)}</label>
+      <select class="ord">${ordOpts}</select>
+      <select class="pl">${plOpts}</select>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('.slot').forEach(el=>{
+    const idx=el.getAttribute('data-idx');
+    el.querySelector('.ord').onchange=e=>{slotState[form+'|'+idx].order=e.target.value; renderAll();};
+    el.querySelector('.pl').onchange=e=>{slotState[form+'|'+idx].playerId=e.target.value; renderAll();};
+  });
+}
+
+function sectorTotals(){
+  const form=document.getElementById('formation').value;
+  const slots=FORMATIONS[form]||[];
+  const R=coachR(document.getElementById('coach').value);
+  const totals={}; SECTORS.forEach(s=>totals[s]=0);
+  const detail=[];
+  slots.forEach((base,idx)=>{
+    const st=slotState[form+'|'+idx]||{order:ordersForBase(base)[0],playerId:''};
+    const pos=fullPos(base, st.order);
+    const pl=playerById(st.playerId);
+    if(!pl) return;
+    const rs=rowsForPos(pos);
+    const bySec={};
+    rs.forEach(r=>{
+      const c=calcRow(r,pl,R);
+      if(c.L==null) return;
+      bySec[r.sec]=bySec[r.sec]||{L:0,ss:num(r.ss),V:num(r.v)};
+      bySec[r.sec].L+=c.L;
+    });
+    Object.keys(bySec).forEach(sec=>{
+      const o=bySec[sec];
+      const M=o.L>0?qRound(Math.pow(o.L*R*o.ss,o.V)/4+1):0.75;
+      totals[sec]=(totals[sec]||0)+M;
+      detail.push({pos,sec,M,L:o.L,player:pl.name});
+    });
+  });
+  const box=document.getElementById('sectors');
+  box.innerHTML=SECTORS.map(s=>`<div class="sec"><span>${SECTOR_SHORT[s]||s}</span><b>${fmt(totals[s]||0,2)}</b></div>`).join('');
+  return {totals,detail};
+}
+
+function renderTable(){
   const R=coachR(document.getElementById('coach').value);
   document.getElementById('coachR').textContent='R='+fmt(R,4);
+  const fpos=document.getElementById('filterPos').value;
+  const q=(document.getElementById('search').value||'').toLocaleLowerCase('tr-TR');
+  const form=document.getElementById('formation').value;
+  const slots=FORMATIONS[form]||[];
+  const posPlayer={};
+  slots.forEach((base,idx)=>{
+    const st=slotState[form+'|'+idx]||{};
+    const pos=fullPos(base, st.order||ordersForBase(base)[0]);
+    if(st.playerId) posPlayer[pos]=playerById(st.playerId);
+  });
+
   let list=ROWS;
-  if(pos) list=list.filter(r=>r.pos===pos);
+  if(fpos) list=list.filter(r=>r.pos===fpos);
   if(q) list=list.filter(r=>(r.pos+' '+r.sec+' '+r.sk).toLocaleLowerCase('tr-TR').includes(q));
-  lastCalc=list.map(r=>({row:r, c:calcRow(r,pl,R)}));
+
+  lastCalc=list.map(r=>{
+    const pl=posPlayer[r.pos]||null;
+    return {row:r,c:calcRow(r,pl,R),pl};
+  });
   const tb=document.getElementById('tbody');
-  if(!lastCalc.length){tb.innerHTML='<tr><td colspan="20" class="empty">Satır yok</td></tr>';document.getElementById('count').textContent='0';return;}
+  if(!lastCalc.length){tb.innerHTML='<tr><td colspan="20" style="text-align:center;padding:16px;color:#69756f">Satır yok</td></tr>';return;}
   tb.innerHTML=lastCalc.map(({row:r,c})=>`<tr>
-    <td><b>${esc(r.pos)}</b></td>
-    <td>${esc(r.sec)}</td>
-    <td>${esc(r.sk)}</td>
+    <td><b>${esc(r.pos)}</b></td><td>${esc(r.sec)}</td><td>${esc(r.sk)}</td>
     <td class="num calc">${c.D==null?'—':c.D}</td>
     <td class="num">${fmt(c.E)}</td>
     <td class="num calc">${c.F==null?'—':c.F}</td>
@@ -173,33 +239,37 @@ function render(){
     <td class="num calc">${fmt(c.K,4)}</td>
     <td class="num calc">${fmt(c.L,4)}</td>
     <td class="num mcol">${c.M==null?'—':fmt(c.M,2)}</td>
-    <td class="num">${fmt(c.N)}</td>
-    <td class="num">${fmt(c.O)}</td>
-    <td class="num">${fmt(c.P)}</td>
-    <td class="num">${fmt(c.Q)}</td>
-    <td class="num">${fmt(c.R,4)}</td>
-    <td class="num">${fmt(c.ss)}</td>
-    <td class="num">${fmt(c.V)}</td>
+    <td class="num">${fmt(c.N)}</td><td class="num">${fmt(c.O)}</td><td class="num">${fmt(c.P)}</td><td class="num">${fmt(c.Q)}</td>
+    <td class="num">${fmt(c.R,4)}</td><td class="num">${fmt(c.ss)}</td><td class="num">${fmt(c.V)}</td>
   </tr>`).join('');
-  document.getElementById('count').textContent=lastCalc.length+' satır';
-  document.getElementById('meta').textContent=pl
-    ? ('Oyuncu: '+pl.name+' · Form '+pl.form+' · Exp '+pl.experience+' · Loy '+pl.loyalty+' · KoçR '+fmt(R,4))
-    : 'Oyuncu seçilmedi — D/F/G/H ve türetilenler boş; E/N/O/P/Q/ss sabit.';
+  document.getElementById('count').textContent=lastCalc.length+' satır · '+POSITIONS.length+' pozisyon';
 }
-function fillPos(){
-  const sel=document.getElementById('pos');
-  const set=[]; ROWS.forEach(r=>{if(!set.includes(r.pos)) set.push(r.pos);});
-  set.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});
+
+function renderAll(){
+  renderSlots();
+  sectorTotals();
+  renderTable();
 }
-function fillPlayers(){
-  const sel=document.getElementById('player'); const cur=sel.value;
-  sel.innerHTML='<option value="">Oyuncu seç</option>';
-  players.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'tr')).forEach(p=>{
-    const o=document.createElement('option'); o.value=String(p.id);
-    o.textContent=p.name+' (DEF '+num(p.defending)+' PM '+num(p.playmaking)+')';
-    sel.appendChild(o);
+
+function fillFormation(){
+  const sel=document.getElementById('formation');
+  sel.innerHTML=Object.keys(FORMATIONS).map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('');
+  sel.onchange=()=>{renderAll();};
+}
+function fillPosFilters(){
+  const sel=document.getElementById('filterPos');
+  POSITIONS.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});
+  sel.onchange=renderTable;
+  const list=document.getElementById('poslist');
+  list.innerHTML=POSITIONS.map(p=>`<span class="poschip" data-p="${esc(p)}">${esc(p)}</span>`).join('');
+  list.querySelectorAll('.poschip').forEach(ch=>{
+    ch.onclick=()=>{
+      document.getElementById('filterPos').value=ch.getAttribute('data-p');
+      list.querySelectorAll('.poschip').forEach(x=>x.classList.remove('on'));
+      ch.classList.add('on');
+      renderTable();
+    };
   });
-  if(cur) sel.value=cur;
 }
 function normalizePlayer(p){
   return {id:num(p.id||p.playerId),name:p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||('#'+(p.id||'')),
@@ -210,41 +280,35 @@ function normalizePlayer(p){
 async function loadPlayers(){
   try{
     const r=await fetch('/api/v5/team-player-export',{cache:'no-store',credentials:'same-origin'});
-    const t=await r.text(); let d={}; try{d=t?JSON.parse(t):{};}catch{throw new Error('JSON hatası');}
+    const t=await r.text(); let d={}; try{d=t?JSON.parse(t):{};}catch{throw new Error('JSON');}
     if(!r.ok) throw new Error(d.message||d.detail||('HTTP '+r.status));
-    players=(d.players||[]).map(normalizePlayer); fillPlayers();
-    document.getElementById('hint').textContent=players.length?(players.length+' CHPP oyuncu'):'Oyuncu yok';
-    render();
-  }catch(e){document.getElementById('hint').textContent='CHPP: '+e.message; render();}
+    players=(d.players||[]).map(normalizePlayer);
+    document.getElementById('hint').textContent=players.length? (players.length+' CHPP oyuncu · '+POSITIONS.length+' pozisyon · '+ROWS.length+' formül satırı') : 'Oyuncu yok';
+    renderAll();
+  }catch(e){document.getElementById('hint').textContent='CHPP: '+e.message+' · katsayılar yüklü'; renderAll();}
 }
 async function boot(){
   try{
-    if(!window.GENEL_FULL_HEX) throw new Error('GENEL_FULL_HEX yok');
-    const hex=window.GENEL_FULL_HEX;
+    if(!window.GENEL_ALL_HEX) throw new Error('GENEL_ALL_HEX yok');
+    const hex=window.GENEL_ALL_HEX;
     const bin=new Uint8Array(hex.length/2);
     for(let i=0;i<bin.length;i++) bin[i]=parseInt(hex.substr(i*2,2),16);
-    const ds=new DecompressionStream('gzip');
-    const stream=new Blob([bin]).stream().pipeThrough(ds);
-    const text=await new Response(stream).text();
-    ROWS=JSON.parse(text);
-    fillPos(); render();
-    document.getElementById('hint').textContent=ROWS.length+' Genel satır yüklendi';
-  }catch(e){
-    document.getElementById('tbody').innerHTML='<tr><td colspan="20" class="empty">'+esc(e.message)+'</td></tr>';
-    document.getElementById('hint').textContent=e.message;
-  }
+    const text=await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    const data=JSON.parse(text);
+    ROWS=data.rows||[]; POSITIONS=data.positions||[]; FORMATIONS=data.formations||{};
+    fillFormation(); fillPosFilters();
+    document.getElementById('hint').textContent=ROWS.length+' satır · '+POSITIONS.length+' pozisyon';
+    renderAll();
+  }catch(e){document.getElementById('hint').textContent=e.message;}
   loadPlayers();
 }
-document.getElementById('pos').onchange=render;
-document.getElementById('player').onchange=render;
-document.getElementById('search').oninput=render;
-document.getElementById('coach').oninput=render;
+document.getElementById('coach').oninput=()=>{renderAll();};
+document.getElementById('search').oninput=renderTable;
 document.getElementById('reload').onclick=loadPlayers;
 document.getElementById('jsonBtn').onclick=()=>{
-  const payload={schema:'hattrickai-genel-full-v1',coachLv:Number(document.getElementById('coach').value||0),coachR:coachR(document.getElementById('coach').value),
-    player:selectedPlayer(),rows:lastCalc.map(({row,c})=>({pos:row.pos,sector:row.sec,skill:row.sk,...c}))};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='genel-calc.json'; a.click();
+  const sec=sectorTotals();
+  const payload={schema:'hattrickai-genel-all-v1',formation:document.getElementById('formation').value,coachR:coachR(document.getElementById('coach').value),sectors:sec.totals,detail:sec.detail,rows:lastCalc};
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'})); a.download='genel-all.json'; a.click();
 };
 boot();
 </script>
