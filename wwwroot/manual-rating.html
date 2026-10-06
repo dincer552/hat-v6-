@@ -1,1 +1,16 @@
-SEE_FILE
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HattrickAI V6 · Manuel Rating</title>
+<style>body{font-family:Arial,sans-serif;background:#edf1ee;margin:0;padding:24px;color:#26332c}.card{max-width:520px;margin:40px auto;background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 9px #0002}a{color:#21804a;font-weight:800}</style>
+</head><body><div class="card" id="box">Manuel rating yükleniyor…</div>
+<script>
+fetch('/manual-rating-body.html',{cache:'no-store'}).then(r=>{
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.text();
+}).then(html=>{
+  document.open(); document.write(html); document.close();
+}).catch(e=>{
+  document.getElementById('box').innerHTML='Yüklenemedi: '+e.message+
+    '<p><a href="/genel.html">Genel</a> · <a href="/hattrick.html">Oyuncular</a></p>';
+});
+</script></body></html>
