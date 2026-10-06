@@ -11,6 +11,7 @@
     <Compile Include="Core/CHPP/ChppV5.cs" />
     <Compile Include="Core/CHPP/ChppDebugLog.cs" />
     <Compile Include="Core/CHPP/ChppCoreModels.cs" />
+    <Compile Include="Core/CHPP/ChppRosterFilter.cs" />
     <Compile Include="Core/CHPP/TeamPlayerChppExportService.cs" />
   </ItemGroup>
 </Project>
