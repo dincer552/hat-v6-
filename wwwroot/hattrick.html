@@ -1,35 +1,259 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HattrickAI V6 | CHPP</title>
-<style>body{margin:0;background:#eef3f0;color:#1c2925;font-family:Arial,sans-serif}.wrap{max-width:760px;margin:55px auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.top a{color:#197247;text-decoration:none;font-weight:800}.card{background:#fff;border-radius:20px;padding:30px;box-shadow:0 5px 24px #0001}.brand{font-size:30px;font-weight:900}.brand span{color:#19804c}.build{color:#7a847f;font-size:12px;margin:8px 0 28px}.status{padding:18px;border-radius:14px;background:#f2f5f3}.dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#888;margin-right:8px}.dot.on{background:#20a35c}.btn{margin-top:18px;border:0;border-radius:11px;background:#19804c;color:#fff;padding:13px 20px;font-weight:900;cursor:pointer}.sub{color:#69756f;font-size:13px;margin-top:7px}.error{display:none;margin-top:15px;background:#fff0ee;color:#9b3d33;padding:10px;border-radius:9px;font-size:12px}
-.players{display:none;margin-top:18px;border:1px solid #dfe7e3;border-radius:14px;overflow:hidden;background:#fff}
-.players-head{padding:13px 15px;border-bottom:1px solid #e6ece8;display:flex;align-items:center;gap:10px}
-.players-head b{font-size:14px}.players-head span{font-size:10px;color:#6d7872;flex:1}
-.players-tools{padding:8px 10px;border-bottom:1px solid #e6ece8;display:flex;gap:7px}
-.players-tools input{height:30px;flex:1;border:1px solid #d5dfda;border-radius:7px;padding:0 8px;font-size:10px}
-.players-wrap{overflow:auto;max-height:520px}
-.players table{border-collapse:collapse;min-width:1080px;width:100%;font-size:9px}
-.players th,.players td{border:1px solid #e0e7e3;padding:5px 6px;white-space:nowrap;text-align:center}
-.players th{background:#e9f1ed;position:sticky;top:0;z-index:2}
-.players th:first-child,.players td:first-child{position:sticky;left:0;z-index:3;background:#f5f8f6;text-align:left}
-.players .num{font-weight:900}.players .skill{font-weight:900}.players .danger{color:#a04439}.players .muted{color:#78837d}
-.players-status{padding:9px 12px;border-top:1px solid #e6ece8;color:#68736e;font-size:9px}
-@media(max-width:760px){.players table{font-size:8px}.players th,.players td{padding:4px 5px}}</style></head>
-<body><main class="wrap"><div class="top"><a href="/">← Dinçer Yüksek</a><span>HattrickAI V6 · <a href="/chpp-logs" style="color:#197247;text-decoration:none;font-weight:800">CHPP LOG</a></span></div><section class="card"><div class="brand">Hattrick<span>AI</span> V6</div><div class="build" id="build">build …</div><div class="status"><div><i class="dot" id="dot"></i><b id="status">CHPP bağlantısı kontrol ediliyor</b></div><div class="sub" id="sub">V6 altyapısı şu aşamada yalnızca CHPP bağlantısı için hazır.</div><a class="btn" id="connect" href="/auth/chpp/start" style="display:inline-block;text-decoration:none">CHPP BAĞLAN</a><button class="btn" id="refreshPlayers" style="display:none">OYUNCULARI YENİLE</button><div class="error" id="error"></div>
-<div class="players" id="players">
-<div class="players-head"><b id="playersTitle">Oyuncular</b><span id="playersMeta">CHPP oyuncu kadrosu</span></div>
-<div class="players-tools"><input id="playerSearch" placeholder="Oyuncu adı ara…"></div>
-<div class="players-wrap"><table><thead><tr>
-<th>Oyuncu</th><th>ID</th><th>Yaş</th><th>TSI</th><th>Maaş</th><th>KL</th><th>DEF</th><th>PM</th><th>KAN</th><th>PAS</th><th>GOL</th><th>DT</th><th>STA</th><th>FORM</th><th>EXP</th><th>LİD</th><th>LOY</th><th>Kart</th><th>SP</th><th>Sakat</th>
-</tr></thead><tbody id="playersBody"></tbody></table></div>
-<div class="players-status" id="playersStatus">CHPP bağlantısı bekleniyor…</div>
-</div></div></section></main>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HattrickAI V6 · Oyuncular</title>
+<style>
+:root{--bg:#eef3f0;--card:#fff;--ink:#1c2925;--muted:#69756f;--g:#19804c;--line:#d7e3db;--ok:#20a35c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:18px 14px 40px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.top a{color:var(--g);text-decoration:none;font-weight:800;font-size:13px}
+.card{background:var(--card);border-radius:16px;padding:18px 18px 14px;box-shadow:0 4px 18px #0001;margin-bottom:14px}
+.brand{font-size:26px;font-weight:900}
+.brand span{color:var(--g)}
+.build{color:var(--muted);font-size:12px;margin:4px 0 0}
+.status-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#888}
+.dot.on{background:var(--ok)}
+.btn{border:0;border-radius:10px;background:var(--g);color:#fff;padding:10px 16px;font-weight:900;cursor:pointer;font-size:13px;text-decoration:none;display:inline-block}
+.btn.secondary{background:#eef5f0;color:var(--g);border:1px solid #c5d9cc}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.sub{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.4}
+.error{display:none;margin-top:12px;background:#fff0ee;color:#9b3d33;padding:10px;border-radius:9px;font-size:12px;white-space:pre-wrap}
+.controls{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin:12px 0 8px}
+.controls input,.controls select{height:38px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-size:13px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:70vh}
+table{border-collapse:collapse;width:100%;min-width:980px;font-size:12px}
+th,td{border-bottom:1px solid #e8efea;padding:7px 8px;text-align:center;white-space:nowrap}
+th{position:sticky;top:0;background:#f4f8f5;font-size:10px;letter-spacing:.03em;color:#4d5a54;z-index:1}
+td.name,th.name{text-align:left;position:sticky;left:0;background:#fff;z-index:2;min-width:140px}
+th.name{background:#f4f8f5;z-index:3}
+tr:hover td{background:#f7fbf8}
+tr:hover td.name{background:#f0f7f2}
+.skill{font-weight:800}
+.meta{font-size:11px;color:var(--muted);margin-top:8px}
+.badge{display:inline-block;padding:2px 7px;border-radius:999px;background:#e8f4ec;color:#1d6b42;font-size:10px;font-weight:900}
+.empty{padding:28px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:700px){.controls{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <a href="/">← Dinçer Yüksek</a>
+    <span style="font-size:12px;color:#69756f">HattrickAI V6 · <a href="/chpp-logs">CHPP LOG</a> · <a href="/genel.html">GENEL</a></span>
+  </div>
+
+  <section class="card">
+    <div class="brand">Hattrick<span>AI</span> V6</div>
+    <div class="build" id="build">build …</div>
+    <div class="status-row">
+      <i class="dot" id="dot"></i>
+      <b id="status">CHPP kontrol ediliyor…</b>
+      <a class="btn" id="connect" href="/auth/chpp/start">CHPP BAĞLAN</a>
+      <button class="btn secondary" id="reload" type="button" disabled>YENİLE</button>
+    </div>
+    <div class="sub" id="sub">Bağlantı sonrası CHPP oyuncu listesi Excel Genel tablosu gibi burada listelenir.</div>
+    <div class="error" id="error"></div>
+  </section>
+
+  <section class="card" id="playersCard" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="eyebrow" style="font-size:10px;font-weight:900;letter-spacing:.08em;color:#7c837f">CHPP OYUNCULARI</div>
+        <div style="font-size:18px;font-weight:900" id="teamTitle">Takım</div>
+      </div>
+      <span class="badge" id="countBadge">0 oyuncu</span>
+    </div>
+    <div class="controls">
+      <input id="search" placeholder="İsim ara…">
+      <select id="sort">
+        <option value="name">İsim</option>
+        <option value="defending">DEF</option>
+        <option value="playmaking">PM</option>
+        <option value="passing">PAS</option>
+        <option value="winger">WI</option>
+        <option value="scoring">SC</option>
+        <option value="keeper">GK</option>
+        <option value="form">Form</option>
+        <option value="experience">Exp</option>
+        <option value="stamina">STA</option>
+      </select>
+      <button class="btn secondary" id="jsonBtn" type="button">JSON</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="name">Oyuncu</th>
+            <th>Yaş</th>
+            <th>GK</th>
+            <th>DEF</th>
+            <th>PM</th>
+            <th>PAS</th>
+            <th>WI</th>
+            <th>SC</th>
+            <th>SP</th>
+            <th>STA</th>
+            <th>Form</th>
+            <th>Exp</th>
+            <th>Loy</th>
+            <th>FormF</th>
+            <th>TSI</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="meta" id="meta">Excel mantığı: FormF = 0.378 × √(min(7, Form−1)) · Etkin skill adımı sonraki aşamada.</div>
+  </section>
+</main>
 <script>
-async function load(){const params=new URLSearchParams(location.search);const error=params.get('error');if(error){const box=document.getElementById('error');box.textContent=error;box.style.display='block'}try{const b=await fetch('/api/v5/build',{cache:'no-store'}).then(r=>r.json());document.getElementById('build').textContent='build '+String(b.build||'dev').slice(0,7)}catch{}
-let allPlayers=[];
-function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
-function renderPlayers(){const q=document.getElementById('playerSearch').value.trim().toLocaleLowerCase('tr-TR');const body=document.getElementById('playersBody');const list=allPlayers.filter(p=>!q||String(p.name||'').toLocaleLowerCase('tr-TR').includes(q));body.innerHTML=list.map(p=>'<tr><td class="num">'+esc(p.name)+'</td><td>'+p.id+'</td><td>'+p.age+'</td><td>'+p.tsi+'</td><td>'+p.salary+'</td><td class="skill">'+p.keeper+'</td><td class="skill">'+p.defending+'</td><td class="skill">'+p.playmaking+'</td><td class="skill">'+p.winger+'</td><td class="skill">'+p.passing+'</td><td class="skill">'+p.scoring+'</td><td class="skill">'+p.setPiecesSkill+'</td><td class="skill">'+p.stamina+'</td><td class="skill">'+p.form+'</td><td class="skill">'+p.experience+'</td><td class="skill">'+p.leadership+'</td><td>'+p.loyalty+'</td><td>'+p.cards+'</td><td>'+specialty(p.specialty)+'</td><td class="'+(Number(p.injuryLevel)>=0?'danger':'muted')+'">'+(Number(p.injuryLevel)>=0?p.injuryLevel:'—')+'</td></tr>').join('');document.getElementById('playersStatus').textContent=list.length+' oyuncu gösteriliyor • CHPP players v1.3'}
-function specialty(v){const m={None:'—',Technical:'Teknik',Quick:'Hızlı',Powerful:'Güçlü',Unpredictable:'Öngörülemez',Head:'Kafa'};return m[v]||v||'—'}
-async function loadPlayers(){const box=document.getElementById('players');const meta=document.getElementById('playersMeta');const body=document.getElementById('playersBody');try{const r=await fetch('/api/v5/team-player-export',{cache:'no-store'});if(r.status===401){box.style.display='none';return}const d=await r.json();if(!r.ok)throw Error(d.detail||d.message||'Oyuncular alınamadı');allPlayers=d.players||[];meta.textContent=(d.team?.teamName||'Takım')+' • '+allPlayers.length+' oyuncu';box.style.display='block';document.getElementById('refreshPlayers').style.display='inline-block';renderPlayers()}catch(e){body.innerHTML='';document.getElementById('playersStatus').textContent=e.message;box.style.display='block'}}
-try{const s=await fetch('/api/v5/status',{cache:'no-store'}).then(r=>r.json());const dot=document.getElementById('dot'),btn=document.getElementById('connect');if(s.connected){dot.classList.add('on');document.getElementById('status').textContent='CHPP bağlı';document.getElementById('sub').textContent='CHPP hesabı bağlı. Oyuncu kadrosu aşağıda otomatik yükleniyor.';btn.textContent='CHPP BAĞLI';loadPlayers()}else{document.getElementById('status').textContent='CHPP bağlı değil';document.getElementById('sub').textContent='Hattrick hesabını CHPP üzerinden bağlayabilirsin.'}}catch(e){document.getElementById('status').textContent='CHPP durumuna ulaşılamadı';document.getElementById('sub').textContent=e.message}
-document.getElementById('playerSearch')?.addEventListener('input',renderPlayers);document.getElementById('refreshPlayers')?.addEventListener('click',loadPlayers);load();
-</script></body></html>
+const SKILL_KEYS=['keeper','defending','playmaking','passing','winger','scoring','setPieces','stamina','form','experience','loyalty'];
+let players=[], teamInfo=null, lastPayload=null;
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#039;'}[m]));}
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+/** Excel: FormF = 0.378 * SQRT(MIN(7, Form-1)) */
+function formF(form){return 0.378*Math.sqrt(Math.min(7,Math.max(0,num(form)-1)));}
+function fmt1(v){return num(v).toFixed(3).replace(/\\.?0+$/,'');}
+
+function showError(msg){
+  const box=document.getElementById('error');
+  if(!msg){box.style.display='none';box.textContent='';return;}
+  box.textContent=msg;box.style.display='block';
+}
+
+async function readJson(url){
+  const r=await fetch(url,{cache:'no-store',credentials:'same-origin'});
+  const t=await r.text();
+  let d={};
+  try{d=t?JSON.parse(t):{};}catch{throw new Error('Geçersiz JSON: '+url);}
+  if(!r.ok) throw new Error(d.message||d.detail||d.title||('HTTP '+r.status));
+  return d;
+}
+
+function renderPlayers(){
+  const q=(document.getElementById('search').value||'').toLocaleLowerCase('tr-TR');
+  const sort=document.getElementById('sort').value;
+  let list=players.slice();
+  if(q) list=list.filter(p=>String(p.name||'').toLocaleLowerCase('tr-TR').includes(q));
+  list.sort((a,b)=>{
+    if(sort==='name') return String(a.name||'').localeCompare(String(b.name||''),'tr');
+    return num(b[sort])-num(a[sort]);
+  });
+  const tb=document.getElementById('tbody');
+  if(!list.length){tb.innerHTML='<tr><td colspan="15" class="empty">Oyuncu bulunamadı</td></tr>';return;}
+  tb.innerHTML=list.map(p=>{
+    const age=p.age!=null?(p.ageDays!=null?(p.age+'.'+String(p.ageDays).padStart(2,'0')):p.age):'—';
+    return `<tr>
+      <td class="name"><b>${esc(p.name)}</b><div style="font-size:10px;color:#7a847f">#${esc(p.id)}</div></td>
+      <td>${esc(age)}</td>
+      <td class="skill">${num(p.keeper)}</td>
+      <td class="skill">${num(p.defending)}</td>
+      <td class="skill">${num(p.playmaking)}</td>
+      <td class="skill">${num(p.passing)}</td>
+      <td class="skill">${num(p.winger)}</td>
+      <td class="skill">${num(p.scoring)}</td>
+      <td class="skill">${num(p.setPieces)}</td>
+      <td>${num(p.stamina)}</td>
+      <td>${num(p.form)}</td>
+      <td>${num(p.experience)}</td>
+      <td>${num(p.loyalty)}</td>
+      <td title="0.378×√min(7,Form-1)">${fmt1(formF(p.form))}</td>
+      <td>${p.tsi!=null?Number(p.tsi).toLocaleString('tr-TR'):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function normalizePlayer(p){
+  return {
+    id:num(p.id||p.playerId),
+    name:p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||('#'+(p.id||'')),
+    keeper:num(p.keeper??p.goalkeeping),
+    defending:num(p.defending),
+    playmaking:num(p.playmaking),
+    passing:num(p.passing),
+    winger:num(p.winger),
+    scoring:num(p.scoring),
+    setPieces:num(p.setPieces),
+    stamina:num(p.stamina),
+    form:num(p.form),
+    experience:num(p.experience),
+    loyalty:num(p.loyalty),
+    age:p.age, ageDays:p.ageDays, tsi:p.tsi,
+    specialty:p.specialty||p.Specialty||null
+  };
+}
+
+async function loadPlayers(){
+  showError('');
+  document.getElementById('reload').disabled=true;
+  document.getElementById('sub').textContent='CHPP oyuncu verileri alınıyor…';
+  try{
+    const d=await readJson('/api/v5/team-player-export');
+    lastPayload=d;
+    const raw=d.players||[];
+    players=raw.map(normalizePlayer);
+    teamInfo=d.team||{};
+    document.getElementById('playersCard').style.display='block';
+    document.getElementById('teamTitle').textContent=teamInfo.teamName||d.teamName||'Takım';
+    document.getElementById('countBadge').textContent=players.length+' oyuncu';
+    document.getElementById('sub').textContent='CHPP oyuncuları yüklendi. Excel Genel sütunlarıyla aynı skill seti gösteriliyor.';
+    renderPlayers();
+  }catch(e){
+    showError(e.message);
+    document.getElementById('sub').textContent='Oyuncu listesi alınamadı.';
+    document.getElementById('playersCard').style.display='none';
+  }finally{
+    document.getElementById('reload').disabled=false;
+  }
+}
+
+async function boot(){
+  const params=new URLSearchParams(location.search);
+  if(params.get('error')) showError(params.get('error'));
+  try{
+    const b=await readJson('/api/v5/build');
+    document.getElementById('build').textContent='build '+String(b.build||'dev').slice(0,7);
+  }catch{}
+  try{
+    const s=await readJson('/api/v5/status');
+    const dot=document.getElementById('dot');
+    const btn=document.getElementById('connect');
+    if(s.connected){
+      dot.classList.add('on');
+      document.getElementById('status').textContent='CHPP bağlı';
+      btn.textContent='CHPP BAĞLI';
+      btn.href='#';
+      btn.onclick=e=>e.preventDefault();
+      document.getElementById('reload').disabled=false;
+      await loadPlayers();
+    }else{
+      document.getElementById('status').textContent='CHPP bağlı değil';
+      document.getElementById('sub').textContent='Hattrick hesabını bağlayınca oyuncular bu sayfada listelenir.';
+    }
+  }catch(e){
+    document.getElementById('status').textContent='CHPP durumu okunamadı';
+    document.getElementById('sub').textContent=e.message;
+  }
+}
+
+document.getElementById('reload').onclick=loadPlayers;
+document.getElementById('search').oninput=renderPlayers;
+document.getElementById('sort').onchange=renderPlayers;
+document.getElementById('jsonBtn').onclick=()=>{
+  if(!lastPayload){alert('Önce oyuncu verisi yüklenmeli');return;}
+  const blob=new Blob([JSON.stringify(lastPayload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='chpp-players-'+(teamInfo&&teamInfo.teamName?teamInfo.teamName:'team')+'.json';
+  a.click();
+};
+boot();
+</script>
+</body>
+</html>
