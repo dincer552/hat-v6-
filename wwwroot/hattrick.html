@@ -55,6 +55,8 @@ tr:hover td.name{background:#f0f7f2}
       <b id="status">CHPP kontrol ediliyor…</b>
       <a class="btn" id="connect" href="/auth/chpp/start">CHPP BAĞLAN</a>
       <button class="btn secondary" id="reload" type="button" disabled>YENİLE</button>
+      <a class="btn secondary" href="/genel.html">GENEL</a>
+      <a class="btn secondary" href="/manual-rating.html">MANUEL RATING</a>
     </div>
     <div class="sub" id="sub">Bağlantı sonrası CHPP oyuncu listesi Excel Genel tablosu gibi burada listelenir.</div>
     <div class="error" id="error"></div>
@@ -115,7 +117,7 @@ tr:hover td.name{background:#f0f7f2}
 const SKILL_KEYS=['keeper','defending','playmaking','passing','winger','scoring','setPieces','stamina','form','experience','loyalty'];
 let players=[], teamInfo=null, lastPayload=null;
 
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#039;'}[m]));}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
 /** Excel: FormF = 0.378 * SQRT(MIN(7, Form-1)) */
 function formF(form){return 0.378*Math.sqrt(Math.min(7,Math.max(0,num(form)-1)));}
@@ -155,9 +157,9 @@ function renderPlayers(){
       <td class="skill">${num(p.keeper)}</td>
       <td class="skill">${num(p.defending)}</td>
       <td class="skill">${num(p.playmaking)}</td>
-      <td class="skill">${num(p.passing)}</td>
-      <td class="skill">${num(p.winger)}</td>
       <td class="skill">${num(p.scoring)}</td>
+      <td class="skill">${num(p.winger)}</td>
+      <td class="skill">${num(p.passing)}</td>
       <td class="skill">${num(p.setPieces)}</td>
       <td>${num(p.stamina)}</td>
       <td>${num(p.form)}</td>
