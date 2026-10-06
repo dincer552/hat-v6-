@@ -1,19 +1,198 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HattrickAI V6 • Genel Motor</title>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HattrickAI V6 · Genel A–E</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#eef2f1;color:#172522;font-family:Arial,sans-serif}.wrap{max-width:1500px;margin:auto;padding:10px}.top{background:#102326;color:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}.brand{font-size:18px;font-weight:900}.brand span{color:#62d89b}.sub{color:#b9ccc5;font-size:10px;flex:1}.btn{border:0;border-radius:8px;padding:8px 10px;background:#19804c;color:#fff;font-weight:900;cursor:pointer;font-size:10px}.card{background:#fff;border-radius:14px;margin-top:10px;box-shadow:0 2px 9px #0002;overflow:hidden}.info{padding:11px 13px;border-bottom:1px solid #e6ece8;display:flex;gap:8px;align-items:center}.info b{font-size:12px}.info span{font-size:10px;color:#68736e}.tools{padding:8px 12px;display:flex;gap:7px;align-items:center;border-bottom:1px solid #e6ece8}.tools input{height:30px;border:1px solid #d5dfda;border-radius:7px;padding:0 8px;font-size:10px}.sheet{overflow:auto;max-height:calc(100vh - 130px)}table{border-collapse:collapse;min-width:1450px;font-size:9px}th,td{border:1px solid #dfe7e3;padding:4px 5px;white-space:nowrap}th{background:#e9f1ed;position:sticky;top:0;z-index:2;font-weight:900}th:first-child,td:first-child{position:sticky;left:0;z-index:3;background:#f5f8f6}td.formula{font-family:Consolas,monospace;font-size:8px;color:#315443;max-width:620px;white-space:normal;word-break:break-word}.const{background:#fffbea!important}.formula-tag{display:inline-block;background:#eef7f0;color:#247043;border-radius:4px;padding:1px 3px;font-size:7px;margin-left:3px}.foot{padding:9px 12px;font-size:9px;color:#68736e}@media(max-width:600px){.sub{display:none}.sheet{max-height:calc(100vh - 115px)}table{font-size:8px}.formula{font-size:7px}}
-</style></head><body><main class="wrap">
-<header class="top"><div class="brand">Hattrick<span>AI</span> V6</div><div class="sub">GENEL • Excel v44 birebir hücre/veri/formül aynası</div><button class="btn" onclick="location.href='/manual-rating.html'">← Manuel Rating</button></header>
-<section class="card"><div class="info"><b>Genel</b><span id="meta">Excel'deki A1:S243 alanı yükleniyor…</span></div>
-<div class="tools"><input id="q" placeholder="Hücre / formül / metin ara…" /><button class="btn" id="clear">TEMİZLE</button></div>
-<div class="sheet"><table id="sheet"></table></div><div class="foot">Kaynak: HatFor_Genel_TUM_FORMULLER_v44_WBL_DEF_MERKEZE_MIRROR.xlsx • Formüller metin olarak korunmuştur; hesap motoruna aktarım için bu hücre matrisi kullanılacaktır.</div></section></main>
+:root{--bg:#eef3f0;--card:#fff;--ink:#1c2925;--muted:#69756f;--g:#19804c;--line:#d7e3db}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:14px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.top a{color:var(--g);text-decoration:none;font-weight:800;font-size:13px}
+.card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 3px 14px #0001;margin-bottom:12px}
+.brand{font-size:22px;font-weight:900}.brand span{color:var(--g)}
+.sub{color:var(--muted);font-size:12px;margin-top:4px}
+.controls{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:8px;margin-top:12px}
+.controls select,.controls input{height:38px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-size:13px}
+.btn{border:0;border-radius:9px;background:var(--g);color:#fff;padding:0 14px;font-weight:900;cursor:pointer;height:38px;font-size:12px}
+.btn.secondary{background:#eef5f0;color:var(--g);border:1px solid #c5d9cc}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:70vh;margin-top:12px}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:12px}
+th,td{border-bottom:1px solid #e8efea;padding:7px 8px;text-align:left}
+th{position:sticky;top:0;background:#f4f8f5;font-size:11px;color:#4d5a54;z-index:1}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr:hover td{background:#f7fbf8}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#e8f4ec;color:#1d6b42;font-size:10px;font-weight:900}
+.meta{font-size:11px;color:var(--muted);margin-top:8px}
+.player-hint{font-size:11px;color:var(--muted);margin-top:6px}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+@media(max-width:700px){.controls{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <a href="/hattrick.html">← Oyuncular</a>
+    <span style="font-size:12px;color:#69756f">HattrickAI V6 · Genel A–E</span>
+  </div>
+  <section class="card">
+    <div class="brand">Genel <span>A–E</span></div>
+    <div class="sub">Excel Genel sekmesi: A Pozisyon · B Rating bölgesi · C Oyuncu özelliği · D Oyuncu değeri · E Katsayı</div>
+    <div class="controls">
+      <select id="pos"><option value="">Tüm pozisyonlar</option></select>
+      <select id="player"><option value="">Oyuncu seç (D sütunu)</option></select>
+      <input id="search" placeholder="Ara (sektör / skill)…">
+      <button class="btn secondary" id="reload" type="button">CHPP YENİLE</button>
+    </div>
+    <div class="player-hint" id="hint">D sütunu: seçilen oyuncunun skill değeri (Excel INDEX/MATCH yerine CHPP).</div>
+  </section>
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <b>Katsayı tablosu</b>
+      <span class="badge" id="count">0 satır</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>A · Pozisyon</th>
+            <th>B · Rating bölgesi</th>
+            <th>C · Oyuncu özelliği</th>
+            <th class="num">D · Oyuncu değeri</th>
+            <th class="num">E · Katsayı</th>
+            <th class="num">D×E</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="meta" id="meta">Kaynak: HatFor Genel A–E katsayı satırları</div>
+  </section>
+</main>
 <script>
-const B64="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";
-const COLS=19;
-function col(n){let s='';while(n){let r=(n-1)%26;s=String.fromCharCode(65+r)+s;n=Math.floor((n-1)/26)}return s}
-async function loadData(){const bytes=Uint8Array.from(atob(B64),c=>c.charCodeAt(0));const ds=new DecompressionStream('deflate');const stream=new Blob([bytes]).stream().pipeThrough(ds);const raw=await new Response(stream).text();return JSON.parse(raw)}
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function render(rows,q=''){const t=document.getElementById('sheet');let h='<thead><tr><th>#</th>';for(let c=1;c<=COLS;c++)h+='<th>'+col(c)+'</th>';h+='</tr></thead><tbody>';let shown=0;for(let r=0;r<rows.length;r++){const cells=rows[r]||[];const text=cells.map(x=>String(x[1]??'')).join(' ').toLocaleLowerCase('tr-TR');if(q&&!text.includes(q.toLocaleLowerCase('tr-TR'))&&!String(r+1).includes(q))continue;shown++;const map=new Map(cells);h+='<tr><th>'+String(r+1)+'</th>';for(let c=1;c<=COLS;c++){const v=map.get(c);const formula=typeof v==='string'&&v.startsWith('=');const constant=(c>=15&&c<=19);h+='<td class="'+(formula?'formula ':'')+(constant?'const':'')+'">'+(v==null?'':esc(v))+(formula?'<span class="formula-tag">FORMÜL</span>':'')+'</td>'}h+='</tr>'}h+='</tbody>';t.innerHTML=h;document.getElementById('meta').textContent=shown+' satır gösteriliyor • A1:S243 • tüm dolu hücreler ve formüller korundu'}
-loadData().then(rows=>{window.__genelSheet=rows;render(rows);document.getElementById('q').oninput=e=>render(rows,e.target.value);document.getElementById('clear').onclick=()=>{document.getElementById('q').value='';render(rows)}}).catch(e=>{document.getElementById('meta').textContent='Genel verisi yüklenemedi: '+e.message})
-</script></body></html>
+const ROWS = PLACEHOLDER_ROWS;
+const SKILL_MAP = {
+  Goalkeeping: 'keeper',
+  Defending: 'defending',
+  Playmaking: 'playmaking',
+  Passing: 'passing',
+  Winger: 'winger',
+  Scoring: 'scoring',
+  SetPieces: 'setPieces',
+  Stamina: 'stamina'
+};
+let players = [];
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#039;'}[m]));}
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+function fmt(v){return Number.isFinite(v)?(Math.round(v*1000)/1000):'—';}
+
+function skillValue(player, skillName){
+  if(!player) return null;
+  const key = SKILL_MAP[skillName];
+  if(!key) return null;
+  return num(player[key]);
+}
+
+function selectedPlayer(){
+  const id = Number(document.getElementById('player').value||0);
+  return players.find(p=>p.id===id)||null;
+}
+
+function render(){
+  const pos = document.getElementById('pos').value;
+  const q = (document.getElementById('search').value||'').toLocaleLowerCase('tr-TR');
+  const pl = selectedPlayer();
+  let list = ROWS;
+  if(pos) list = list.filter(r=>r.pos===pos);
+  if(q) list = list.filter(r=> (r.pos+' '+r.sector+' '+r.skill).toLocaleLowerCase('tr-TR').includes(q));
+  const tb = document.getElementById('tbody');
+  if(!list.length){tb.innerHTML='<tr><td colspan="6" class="empty">Satır yok</td></tr>';document.getElementById('count').textContent='0 satır';return;}
+  tb.innerHTML = list.map(r=>{
+    const d = skillValue(pl, r.skill);
+    const e = num(r.k);
+    const prod = (d==null)? null : d*e;
+    return `<tr>
+      <td><b>${esc(r.pos)}</b></td>
+      <td>${esc(r.sector)}</td>
+      <td>${esc(r.skill)}</td>
+      <td class="num">${d==null?'—':d}</td>
+      <td class="num">${fmt(e)}</td>
+      <td class="num">${prod==null?'—':fmt(prod)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('count').textContent = list.length+' satır';
+  document.getElementById('meta').textContent = pl
+    ? ('Oyuncu: '+pl.name+' · D sütunu CHPP skill · E Excel katsayısı')
+    : 'Oyuncu seçilmedi — D sütunu boş; E katsayıları Excel Genel’den.';
+}
+
+function fillPos(){
+  const sel=document.getElementById('pos');
+  const set=[];
+  ROWS.forEach(r=>{if(!set.includes(r.pos)) set.push(r.pos);});
+  set.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});
+}
+
+function fillPlayers(){
+  const sel=document.getElementById('player');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Oyuncu seç (D sütunu)</option>';
+  players.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'tr')).forEach(p=>{
+    const o=document.createElement('option');
+    o.value=String(p.id);
+    o.textContent=p.name+' (DEF '+num(p.defending)+' · PM '+num(p.playmaking)+')';
+    sel.appendChild(o);
+  });
+  if(cur) sel.value=cur;
+}
+
+function normalizePlayer(p){
+  return {
+    id:num(p.id||p.playerId),
+    name:p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||('#'+(p.id||'')),
+    keeper:num(p.keeper??p.goalkeeping),
+    defending:num(p.defending),
+    playmaking:num(p.playmaking),
+    passing:num(p.passing),
+    winger:num(p.winger),
+    scoring:num(p.scoring),
+    setPieces:num(p.setPieces),
+    stamina:num(p.stamina),
+    form:num(p.form),
+    experience:num(p.experience),
+    loyalty:num(p.loyalty)
+  };
+}
+
+async function loadPlayers(){
+  document.getElementById('hint').textContent='CHPP oyuncuları yükleniyor…';
+  try{
+    const r=await fetch('/api/v5/team-player-export',{cache:'no-store',credentials:'same-origin'});
+    const t=await r.text();
+    let d={}; try{d=t?JSON.parse(t):{};}catch{throw new Error('JSON hatası');}
+    if(!r.ok) throw new Error(d.message||d.detail||('HTTP '+r.status));
+    players=(d.players||[]).map(normalizePlayer);
+    fillPlayers();
+    document.getElementById('hint').textContent=players.length
+      ? (players.length+' CHPP oyuncu yüklendi. Birini seç → D sütunu dolar.')
+      : 'Oyuncu listesi boş.';
+    render();
+  }catch(e){
+    document.getElementById('hint').textContent='CHPP yok veya hata: '+e.message+' (katsayılar yine görünür)';
+    render();
+  }
+}
+
+fillPos();
+document.getElementById('pos').onchange=render;
+document.getElementById('player').onchange=render;
+document.getElementById('search').oninput=render;
+document.getElementById('reload').onclick=loadPlayers;
+render();
+loadPlayers();
+</script>
+</body>
+</html>
