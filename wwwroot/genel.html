@@ -71,6 +71,7 @@ tr:hover td{background:#f7fbf8}
     <div class="meta" id="meta">Kaynak: HatFor Genel A–E</div>
   </section>
 </main>
+<script src="/genel-ae-data.js"></script>
 <script>
 const SKILL_MAP={Goalkeeping:'keeper',Defending:'defending',Playmaking:'playmaking',Passing:'passing',Winger:'winger',Scoring:'scoring',SetPieces:'setPieces',Stamina:'stamina'};
 let ROWS=[], players=[];
@@ -128,9 +129,12 @@ async function loadPlayers(){
 }
 async function boot(){
   try{
-    const r=await fetch('/genel-ae.json',{cache:'no-store'});
-    if(!r.ok) throw new Error('genel-ae.json HTTP '+r.status);
-    ROWS=await r.json();
+    if(!window.GENEL_AE_B64) throw new Error('GENEL_AE_B64 yok');
+    const bin=Uint8Array.from(atob(window.GENEL_AE_B64),c=>c.charCodeAt(0));
+    const ds=new DecompressionStream('gzip');
+    const stream=new Blob([bin]).stream().pipeThrough(ds);
+    const text=await new Response(stream).text();
+    ROWS=JSON.parse(text);
     fillPos(); render();
     document.getElementById('hint').textContent=ROWS.length+' katsayı satırı yüklendi. CHPP oyuncu seçerek D doldur.';
   }catch(e){
