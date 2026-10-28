@@ -164,7 +164,7 @@ app.MapPost("/api/ai/chat", async (AiChatRequest request, HttpContext http, Hatt
 
     if (request.TeamContext is { Length: > 0 })
     {
-        var recent = await memory.RecentAsync(8, http.Session.Id, ct);
+        var recent = await memory.RecentAsync(4, http.Session.Id, ct);
         var useful = recent.Where(x => x.Kind is "chat" or "feedback")
             .Select(x => new { x.Kind, x.Prompt, x.Answer, x.Feedback, x.CreatedAt })
             .ToArray();
@@ -217,7 +217,7 @@ app.MapPost("/api/ai/chat", async (AiChatRequest request, HttpContext http, Hatt
         if (request.TeamContext is { Length: > 0 })
         {
             var latestUserMessage = request.Messages.LastOrDefault(x => x.Role?.Trim().Equals("user", StringComparison.OrdinalIgnoreCase) == true)?.Content ?? "";
-            var saved = await memory.SaveAsync("chat", latestUserMessage, answer, teamKey: http.Session.Id, ct: ct);
+            var saved = await memory.SaveAsync("chat", latestUserMessage + "\nCHPP takım bağlamı: " + request.TeamContext, answer, teamKey: http.Session.Id, ct: ct);
             memoryId = saved.Id;
         }
         return Results.Ok(new { answer, memoryId });
