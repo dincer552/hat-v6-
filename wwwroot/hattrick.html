@@ -112,6 +112,23 @@ tr:hover td.name{background:#f0f7f2}
     </div>
     <div class="meta" id="meta">Excel mantığı: FormF = 0.378 × √(min(7, Form−1)) · Etkin skill adımı sonraki aşamada.</div>
   </section>
+  <section class="card" id="teamAiCard" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div><div style="font-size:10px;font-weight:900;letter-spacing:.08em;color:#19804c">TAKIM DANIŞMANI</div><div style="font-size:20px;font-weight:900">Hattrick AI</div><div class="sub">CHPP oyuncu verilerine dayalı öneriler. Eksik maç/rakip/piyasa verileri uydurulmaz.</div></div>
+      <span class="badge">NVIDIA AI</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0">
+      <button class="btn ai-topic" data-topic="lineup" type="button">En iyi 11 / diziliş</button>
+      <button class="btn secondary ai-topic" data-topic="training" type="button">Antrenman / gençler</button>
+      <button class="btn secondary ai-topic" data-topic="transfer" type="button">Transfer / satış</button>
+      <button class="btn secondary ai-topic" data-topic="match" type="button">Rakip / maç taktiği</button>
+      <button class="btn secondary ai-topic" data-topic="report" type="button">Genel takım raporu</button>
+    </div>
+    <label for="aiQuestion" style="display:block;font-size:12px;font-weight:800;margin-bottom:6px">Ek soru (isteğe bağlı)</label>
+    <textarea id="aiQuestion" rows="2" maxlength="1000" placeholder="Örn. Pas antrenmanına devam edersem hangi oyuncuları geliştirebilirim?" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font:13px Arial;resize:vertical"></textarea>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px"><button class="btn" id="runTeamAi" type="button">Takımımı analiz et</button><span class="sub" id="aiState">Bir analiz türü seç.</span></div>
+    <div id="aiAnswer" style="display:none;margin-top:14px;padding:14px;border-radius:12px;background:#f4f8f5;border:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.55"></div>
+  </section>
 </main>
 <script>
 const SKILL_KEYS=['keeper','defending','playmaking','passing','winger','scoring','setPieces','stamina','form','experience','loyalty'];
@@ -202,6 +219,7 @@ async function loadPlayers(){
     players=raw.map(normalizePlayer);
     teamInfo=d.team||{};
     document.getElementById('playersCard').style.display='block';
+    document.getElementById('teamAiCard').style.display='block';
     document.getElementById('teamTitle').textContent=teamInfo.teamName||d.teamName||'Takım';
     document.getElementById('countBadge').textContent=players.length+' oyuncu';
     document.getElementById('sub').textContent='CHPP oyuncuları yüklendi. Excel Genel sütunlarıyla aynı skill seti gösteriliyor.';
@@ -210,6 +228,7 @@ async function loadPlayers(){
     showError(e.message);
     document.getElementById('sub').textContent='Oyuncu listesi alınamadı.';
     document.getElementById('playersCard').style.display='none';
+    document.getElementById('teamAiCard').style.display='none';
   }finally{
     document.getElementById('reload').disabled=false;
   }
@@ -255,6 +274,37 @@ document.getElementById('jsonBtn').onclick=()=>{
   a.download='chpp-players-'+(teamInfo&&teamInfo.teamName?teamInfo.teamName:'team')+'.json';
   a.click();
 };
+const AI_TOPICS={
+  lineup:"En iyi 11 ve diziliş: oyuncuların mevcut skill değerlerini kullanarak yaklaşık pozisyon uygunluğunu değerlendir. En iyi adayları, alternatif dizilişi ve nedenlerini belirt. Gerçek rating motoru olmadığı için bunun yaklaşık öneri olduğunu açıkça yaz.",
+  training:"Antrenman ve genç oyuncu geliştirme: CHPP verisindeki yaş ve skill'lere göre gelişime uygun gençleri sırala. Antrenman türü bilinmiyorsa bunu sor veya pas antrenmanı dahil senaryoları ayrı ayrı değerlendir. Skill artışını uydurma.",
+  transfer:"Transfer ve satış: tutulması, geliştirilmesi veya satış için değerlendirilebilecek oyuncuları ayır. Güncel transfer piyasası verisi yok; kesin fiyat üretme. Hangi ek verinin fiyat tahminini iyileştireceğini belirt.",
+  match:"Rakip ve maç taktiği: rakip verisi yoksa önce eksik olduğunu söyle. Eldeki kadrodan genel taktik hazırlığı ve rakipten alınması gereken bilgileri belirt; galibiyet yüzdesi uydurma.",
+  report:"Genel takım raporu: kadro yaş/skill dağılımı, güçlü ve zayıf alanlar, gelişime uygun oyuncular ve öncelikli 3 aksiyon hakkında veriye dayalı rapor hazırla."
+};
+let selectedAiTopic='report';
+document.querySelectorAll('.ai-topic').forEach(b=>b.addEventListener('click',()=>{
+  selectedAiTopic=b.dataset.topic;
+  document.querySelectorAll('.ai-topic').forEach(x=>{x.classList.toggle('secondary',x!==b);});
+  document.getElementById('aiState').textContent='Seçildi: '+b.textContent;
+}));
+document.getElementById('runTeamAi').addEventListener('click',async()=>{
+  const btn=document.getElementById('runTeamAi'),state=document.getElementById('aiState'),out=document.getElementById('aiAnswer');
+  if(!players.length){state.textContent='Önce CHPP oyuncu verilerini yükle.';return;}
+  btn.disabled=true;state.textContent='Takım verileri analiz ediliyor…';out.style.display='block';out.textContent='Yanıt hazırlanıyor…';
+  const context={
+    team:teamInfo||{},
+    source:'Mevcut CHPP takım oyuncu export verisi',
+    limitations:['Oyuncu listesinde bulunmayan takım ratingleri, maç dizilişi, sakatlık/ceza, rakip oyuncuları, maç motoru ratingleri ve güncel transfer fiyatları mevcut değil. Bunları tahmin diye sunma.'],
+    players:players.map(p=>({id:p.id,name:p.name,age:p.age,ageDays:p.ageDays,keeper:p.keeper,defending:p.defending,playmaking:p.playmaking,passing:p.passing,winger:p.winger,scoring:p.scoring,setPieces:p.setPieces,stamina:p.stamina,form:p.form,experience:p.experience,loyalty:p.loyalty,tsi:p.tsi,specialty:p.specialty}))
+  };
+  try{
+    const response=await fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({messages:[{role:'user',content:AI_TOPICS[selectedAiTopic]+'\nEk kullanıcı isteği: '+(document.getElementById('aiQuestion').value.trim()||'Yok')+'\nLütfen Türkçe, başlıklı ve uygulanabilir bir analiz sun.'}],teamContext:JSON.stringify(context)})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||data.error||data.title||('HTTP '+response.status));
+    out.textContent=data.answer||'AI yanıt döndürmedi.';state.textContent='Analiz tamamlandı.';
+  }catch(e){out.textContent='Analiz alınamadı: '+e.message;state.textContent='İstek başarısız.';}
+  finally{btn.disabled=false;}
+});
 boot();
 </script>
 </body>
