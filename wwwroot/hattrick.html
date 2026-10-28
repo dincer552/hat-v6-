@@ -55,6 +55,7 @@ tr:hover td.name{background:#f0f7f2}
       <b id="status">CHPP kontrol ediliyor…</b>
       <a class="btn" id="connect" href="/auth/chpp/start">CHPP BAĞLAN</a>
       <button class="btn secondary" id="reload" type="button" disabled>YENİLE</button>
+      <button class="btn" id="directBest11" type="button">EN İYİ 11 + RATING</button>
       <a class="btn secondary" href="/genel.html">GENEL</a>
       <a class="btn secondary" href="/manual-rating.html">MANUEL RATING</a>
     </div>
@@ -265,6 +266,29 @@ async function boot(){
   }
 }
 
+document.getElementById('directBest11').addEventListener('click',async()=>{
+  const b=document.getElementById('directBest11');
+  b.disabled=true;
+  try{
+    if(!players.length){
+      const status=await readJson('/api/v5/status');
+      if(!status.connected){
+        document.getElementById('sub').textContent='Önce CHPP BAĞLAN butonuyla Hattrick hesabını bağla; sonra bu butona tekrar bas.';
+        document.getElementById('connect').focus();
+        return;
+      }
+      await loadPlayers();
+      if(!players.length) return;
+    }
+    selectedAiTopic='best11rating';
+    document.querySelectorAll('.ai-topic').forEach(x=>x.classList.toggle('secondary',x.dataset.topic!=='best11rating'));
+    document.getElementById('aiState').textContent='En iyi 11 + rating tahmini hazırlanıyor…';
+    document.getElementById('runTeamAi').click();
+    document.getElementById('teamAiCard').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){
+    document.getElementById('sub').textContent='Bağlantı kontrol edilemedi: '+e.message;
+  }finally{b.disabled=false;}
+});
 document.getElementById('reload').onclick=loadPlayers;
 document.getElementById('search').oninput=renderPlayers;
 document.getElementById('sort').onchange=renderPlayers;
