@@ -139,3 +139,5 @@ jobs:
           [ "${HAD_OLD}" -eq 1 ] && docker rm "${ROLLBACK_CONTAINER}" >/dev/null 2>&1 || true
           log "🟢 HattrickAI V6 VM deployment başarılı"
           docker image prune -f
+
+# Redeploy trigger: use repository secrets on the next deployment.
