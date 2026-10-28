@@ -56,7 +56,7 @@ public sealed class HattrickMemoryStore
                 {
                     var record = JsonSerializer.Deserialize<MemoryRecord>(line, JsonOptions);
                     if (record is null) continue;
-                    if (!string.IsNullOrWhiteSpace(teamKey) && !string.IsNullOrWhiteSpace(record.TeamKey) && record.TeamKey != teamKey) continue;
+                    if (!string.IsNullOrWhiteSpace(teamKey) && record.TeamKey != teamKey) continue;
                     records.Add(record);
                 }
                 catch (JsonException) { /* Ignore a partially written/corrupt line. */ }
