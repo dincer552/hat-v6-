@@ -119,6 +119,7 @@ tr:hover td.name{background:#f0f7f2}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0">
       <button class="btn ai-topic" data-topic="lineup" type="button">En iyi 11 / diziliş</button>
+      <button class="btn secondary ai-topic" data-topic="best11rating" type="button">En iyi 11 + rating tahmini</button>
       <button class="btn secondary ai-topic" data-topic="training" type="button">Antrenman / gençler</button>
       <button class="btn secondary ai-topic" data-topic="transfer" type="button">Transfer / satış</button>
       <button class="btn secondary ai-topic" data-topic="match" type="button">Rakip / maç taktiği</button>
@@ -276,6 +277,7 @@ document.getElementById('jsonBtn').onclick=()=>{
   a.click();
 };
 const AI_TOPICS={
+  best11rating:"CHPP oyuncu skill verilerinden en iyi 11’i seç, her oyuncuya en uygun pozisyonu ve yedek alternatiflerini belirt; en uygun dizilişi (ör. 3-5-2, 3-4-3, 4-4-2) gerekçelendir. Takım rating tahmini için orta saha, sol/sağ/merkez savunma ve sol/sağ/merkez hücum sektörlerini ayrı ayrı değerlendir. ÖNEMLİ: Mevcut veride gerçek Hattrick maç motoru hesaplayıcısı, oyuncuların pozisyon bazlı rating katkıları, takım ruhu/özgüven, taktik seviyesi, ev sahibi etkisi ve rakip ratingleri yoksa kesin rating veya galibiyet yüzdesi uydurma. Bunun yerine yalnızca oyuncu skill değerlerinden türetilmiş kaba göreli tahmin ver; mümkünse düşük/orta/yüksek güven ve açık varsayımlar belirt. Gerçek Hattrick ratingi değilse bunu görünür şekilde “heuristik tahmin, resmi maç motoru hesabı değil” diye etiketle. Gerekli veri yoksa hangi verinin eksik olduğunu yaz. Çıktı: diziliş, ilk 11 tablosu (oyuncu/pozisyon/seçim nedeni), duran top adayı, alternatifler, tahmini sektörler ve belirsizlikler.",
   lineup:"En iyi 11 ve diziliş: oyuncuların mevcut skill değerlerini kullanarak yaklaşık pozisyon uygunluğunu değerlendir. En iyi adayları, alternatif dizilişi ve nedenlerini belirt. Gerçek rating motoru olmadığı için bunun yaklaşık öneri olduğunu açıkça yaz.",
   training:"Antrenman ve genç oyuncu geliştirme: CHPP verisindeki yaş ve skill'lere göre gelişime uygun gençleri sırala. Antrenman türü bilinmiyorsa bunu sor veya pas antrenmanı dahil senaryoları ayrı ayrı değerlendir. Skill artışını uydurma.",
   transfer:"Transfer ve satış: tutulması, geliştirilmesi veya satış için değerlendirilebilecek oyuncuları ayır. Güncel transfer piyasası verisi yok; kesin fiyat üretme. Hangi ek verinin fiyat tahminini iyileştireceğini belirt.",
