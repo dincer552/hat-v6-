@@ -128,6 +128,7 @@ tr:hover td.name{background:#f0f7f2}
     <textarea id="aiQuestion" rows="2" maxlength="1000" placeholder="Örn. Pas antrenmanına devam edersem hangi oyuncuları geliştirebilirim?" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font:13px Arial;resize:vertical"></textarea>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px"><button class="btn" id="runTeamAi" type="button">Takımımı analiz et</button><span class="sub" id="aiState">Bir analiz türü seç.</span></div>
     <div id="aiAnswer" style="display:none;margin-top:14px;padding:14px;border-radius:12px;background:#f4f8f5;border:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.55"></div>
+    <div id="aiFeedbackBox" style="display:none;margin-top:10px"><label for="aiFeedback" style="display:block;font-size:12px;font-weight:800;margin-bottom:6px">Bu öneri doğru muydu? Geri bildirim vererek hafızayı geliştir.</label><textarea id="aiFeedback" rows="2" maxlength="2000" placeholder="Örn. Bu oyuncu aslında kanat forvetinde daha iyi rating alıyor." style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font:13px Arial;resize:vertical"></textarea><button class="btn secondary" id="saveAiFeedback" type="button" style="margin-top:8px">Geri bildirimi kaydet</button><span class="sub" id="feedbackState" style="margin-left:8px"></span></div>
   </section>
 </main>
 <script>
@@ -281,7 +282,7 @@ const AI_TOPICS={
   match:"Rakip ve maç taktiği: rakip verisi yoksa önce eksik olduğunu söyle. Eldeki kadrodan genel taktik hazırlığı ve rakipten alınması gereken bilgileri belirt; galibiyet yüzdesi uydurma.",
   report:"Genel takım raporu: kadro yaş/skill dağılımı, güçlü ve zayıf alanlar, gelişime uygun oyuncular ve öncelikli 3 aksiyon hakkında veriye dayalı rapor hazırla."
 };
-let selectedAiTopic='report';
+let selectedAiTopic='report';\nlet lastAiMemoryId=null;
 document.querySelectorAll('.ai-topic').forEach(b=>b.addEventListener('click',()=>{
   selectedAiTopic=b.dataset.topic;
   document.querySelectorAll('.ai-topic').forEach(x=>{x.classList.toggle('secondary',x!==b);});
@@ -301,9 +302,24 @@ document.getElementById('runTeamAi').addEventListener('click',async()=>{
     const response=await fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({messages:[{role:'user',content:AI_TOPICS[selectedAiTopic]+'\nEk kullanıcı isteği: '+(document.getElementById('aiQuestion').value.trim()||'Yok')+'\nLütfen Türkçe, başlıklı ve uygulanabilir bir analiz sun.'}],teamContext:JSON.stringify(context)})});
     const data=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(data.detail||data.error||data.title||('HTTP '+response.status));
-    out.textContent=data.answer||'AI yanıt döndürmedi.';state.textContent='Analiz tamamlandı.';
+    out.textContent=data.answer||'AI yanıt döndürmedi.';state.textContent='Analiz tamamlandı.';lastAiMemoryId=data.memoryId||null;document.getElementById('aiFeedbackBox').style.display=lastAiMemoryId?'block':'none';document.getElementById('aiFeedback').value='';document.getElementById('feedbackState').textContent='';
   }catch(e){out.textContent='Analiz alınamadı: '+e.message;state.textContent='İstek başarısız.';}
   finally{btn.disabled=false;}
+});
+document.getElementById('saveAiFeedback').addEventListener('click',async()=>{
+  const feedback=document.getElementById('aiFeedback').value.trim();
+  const state=document.getElementById('feedbackState');
+  if(!lastAiMemoryId){state.textContent='Önce bir Hattrick analizi yap.';return;}
+  if(!feedback){state.textContent='Geri bildirim yaz.';return;}
+  const button=document.getElementById('saveAiFeedback');button.disabled=true;state.textContent='Kaydediliyor…';
+  try{
+    const r=await fetch('/api/ai/feedback',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({recordId:lastAiMemoryId,feedback})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.detail||d.error||'HTTP '+r.status);
+    state.textContent='Kaydedildi; sonraki analizlerde kullanılacak.';
+    document.getElementById('aiFeedback').value='';
+  }catch(e){state.textContent='Kaydedilemedi: '+e.message;}
+  finally{button.disabled=false;}
 });
 boot();
 </script>
