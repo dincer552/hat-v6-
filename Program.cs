@@ -118,20 +118,14 @@ app.MapPost("/auth/chpp/logout", (ChppV5 chpp) =>
 });
 
 
-app.MapGet("/api/ai/memory", async (HattrickMemoryStore memory, CancellationToken ct) =>
-{
-    var records = await memory.RecentAsync(20, ct: ct);
-    return Results.Ok(new { count = records.Count, records });
-});
-
-app.MapPost("/api/ai/feedback", async (AiFeedbackRequest request, HattrickMemoryStore memory, CancellationToken ct) =>
+app.MapPost("/api/ai/feedback", async (AiFeedbackRequest request, HttpContext http, HattrickMemoryStore memory, CancellationToken ct) =>
 {
     var feedback = (request.Feedback ?? "").Trim();
     if (feedback.Length is < 1 or > 2000)
         return Results.BadRequest(new { error = "Geri bildirim 1-2000 karakter olmalı." });
     if (string.IsNullOrWhiteSpace(request.RecordId) || request.RecordId.Length > 80)
         return Results.BadRequest(new { error = "Geçerli analiz kimliği gerekli." });
-    var record = await memory.SaveAsync("feedback", "analysisId=" + request.RecordId, feedback: feedback, ct: ct);
+    var record = await memory.SaveAsync("feedback", "analysisId=" + request.RecordId, feedback: feedback, teamKey: http.Session.Id, ct: ct);
     return Results.Ok(new { ok = true, id = record.Id });
 });
 
@@ -170,7 +164,7 @@ app.MapPost("/api/ai/chat", async (AiChatRequest request, HttpContext http, Hatt
 
     if (request.TeamContext is { Length: > 0 })
     {
-        var recent = await memory.RecentAsync(8, ct: ct);
+        var recent = await memory.RecentAsync(8, http.Session.Id, ct);
         var useful = recent.Where(x => x.Kind is "chat" or "feedback")
             .Select(x => new { x.Kind, x.Prompt, x.Answer, x.Feedback, x.CreatedAt })
             .ToArray();
@@ -223,7 +217,7 @@ app.MapPost("/api/ai/chat", async (AiChatRequest request, HttpContext http, Hatt
         if (request.TeamContext is { Length: > 0 })
         {
             var latestUserMessage = request.Messages.LastOrDefault(x => x.Role?.Trim().Equals("user", StringComparison.OrdinalIgnoreCase) == true)?.Content ?? "";
-            var saved = await memory.SaveAsync("chat", latestUserMessage, answer, ct: ct);
+            var saved = await memory.SaveAsync("chat", latestUserMessage, answer, teamKey: http.Session.Id, ct: ct);
             memoryId = saved.Id;
         }
         return Results.Ok(new { answer, memoryId });
