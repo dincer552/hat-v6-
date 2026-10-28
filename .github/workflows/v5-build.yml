@@ -80,7 +80,7 @@ jobs:
           NEXT_CONTAINER="hattrick-v6-next"
           DEPLOY_COMMITTED=0
           HAD_OLD=0
-          mkdir -p "${LOG_DIR}"; touch "${LOG_FILE}"
+          mkdir -p "${LOG_DIR}" /home/azureuser/hattrick-data; touch "${LOG_FILE}"
           log() { printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$1" | tee -a "${LOG_FILE}"; }
           diagnostics() {
             log "========== V6 DIAGNOSTICS =========="
@@ -122,7 +122,7 @@ jobs:
             HAD_OLD=1
           fi
           docker rm -f "${NEXT_CONTAINER}" >/dev/null 2>&1 || true
-          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000             -e CHPP_CONSUMER_KEY="${CHPP_CONSUMER_KEY}"             -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}"             -e NVIDIA_API_KEY="${NVIDIA_API_KEY}"             -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}"             -v "${LOG_FILE}:/app/deploy.log:ro" "${IMAGE}:${TAG}"
+          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000             -e CHPP_CONSUMER_KEY="${CHPP_CONSUMER_KEY}"             -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}"             -e NVIDIA_API_KEY="${NVIDIA_API_KEY}"             -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}"             -v "${LOG_FILE}:/app/deploy.log:ro" -v "/home/azureuser/hattrick-data:/data" "${IMAGE}:${TAG}"
           unset CHPP_CONSUMER_SECRET NVIDIA_API_KEY CHPP_MATCHORDER_WRITE_ENABLED
           healthy=0
           for attempt in $(seq 1 12); do
