@@ -67,6 +67,7 @@ jobs:
           GHCR_USER: ${{ github.actor }}
           CHPP_CONSUMER_KEY: ${{ secrets.CHPP_CONSUMER_KEY }}
           CHPP_CONSUMER_SECRET: ${{ secrets.CHPP_CONSUMER_SECRET }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           CHPP_MATCHORDER_WRITE_ENABLED: "false"
         run: |
           set -Eeuo pipefail
@@ -121,8 +122,8 @@ jobs:
             HAD_OLD=1
           fi
           docker rm -f "${NEXT_CONTAINER}" >/dev/null 2>&1 || true
-          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000             -e CHPP_CONSUMER_KEY="${CHPP_CONSUMER_KEY}"             -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}"             -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}"             -v "${LOG_FILE}:/app/deploy.log:ro" "${IMAGE}:${TAG}"
-          unset CHPP_CONSUMER_SECRET CHPP_MATCHORDER_WRITE_ENABLED
+          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000             -e CHPP_CONSUMER_KEY="${CHPP_CONSUMER_KEY}"             -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}"             -e NVIDIA_API_KEY="${NVIDIA_API_KEY}"             -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}"             -v "${LOG_FILE}:/app/deploy.log:ro" "${IMAGE}:${TAG}"
+          unset CHPP_CONSUMER_SECRET NVIDIA_API_KEY CHPP_MATCHORDER_WRITE_ENABLED
           healthy=0
           for attempt in $(seq 1 12); do
             if docker ps --filter "name=${NEXT_CONTAINER}" --filter "status=running" | grep -q "${NEXT_CONTAINER}" && curl --fail --silent --show-error http://127.0.0.1:10000/health >/dev/null; then
