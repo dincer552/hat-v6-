@@ -68,6 +68,7 @@ jobs:
           CHPP_CONSUMER_KEY: ${{ secrets.CHPP_CONSUMER_KEY }}
           CHPP_CONSUMER_SECRET: ${{ secrets.CHPP_CONSUMER_SECRET }}
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          NVIDIA_MODEL: nvidia/nemotron-3.5-lightning-30b-a3b
           CHPP_MATCHORDER_WRITE_ENABLED: "false"
         run: |
           set -Eeuo pipefail
@@ -122,7 +123,7 @@ jobs:
             HAD_OLD=1
           fi
           docker rm -f "${NEXT_CONTAINER}" >/dev/null 2>&1 || true
-          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000             -e CHPP_CONSUMER_KEY="${CHPP_CONSUMER_KEY}"             -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}"             -e NVIDIA_API_KEY="${NVIDIA_API_KEY}"             -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}"             -v "${LOG_FILE}:/app/deploy.log:ro" -v "/home/azureuser/hattrick-data:/data" "${IMAGE}:${TAG}"
+          docker run -d --name "${NEXT_CONTAINER}" --restart unless-stopped -p 10000:10000             -e CHPP_CONSUMER_KEY="${CHPP_CONSUMER_KEY}"             -e CHPP_CONSUMER_SECRET="${CHPP_CONSUMER_SECRET}"             -e NVIDIA_API_KEY="${NVIDIA_API_KEY}"             -e NVIDIA_MODEL="${NVIDIA_MODEL}"             -e CHPP_MATCHORDER_WRITE_ENABLED="${CHPP_MATCHORDER_WRITE_ENABLED}"             -v "${LOG_FILE}:/app/deploy.log:ro" -v "/home/azureuser/hattrick-data:/data" "${IMAGE}:${TAG}"
           unset CHPP_CONSUMER_SECRET NVIDIA_API_KEY CHPP_MATCHORDER_WRITE_ENABLED
           healthy=0
           for attempt in $(seq 1 12); do
