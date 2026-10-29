@@ -250,7 +250,10 @@ async function boot(){
   try{
     const b=await readJson('/api/v5/build');
     document.getElementById('build').textContent='build '+String(b.build||'dev').slice(0,7);
-  }catch{}
+  }catch(e){
+    document.getElementById('build').textContent='build bilgisi alınamadı';
+    showError('Build API hatası: '+e.message);
+  }
   try{
     const s=await readJson('/api/v5/status');
     const dot=document.getElementById('dot');
