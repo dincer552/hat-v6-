@@ -50,6 +50,7 @@ tr:hover td.name{background:#f0f7f2}
   <section class="card">
     <div class="brand">Hattrick<span>AI</span> V6</div>
     <div class="build" id="build">build …</div>
+    <div class="build" id="commit" style="font-size:11px;color:#888;margin-top:2px"></div>
     <div class="status-row">
       <i class="dot" id="dot"></i>
       <b id="status">CHPP kontrol ediliyor…</b>
@@ -250,6 +251,9 @@ async function boot(){
   try{
     const b=await readJson('/api/v5/build');
     document.getElementById('build').textContent='build '+String(b.build||'dev').slice(0,7);
+    if(b.build){
+      document.getElementById('commit').textContent='commit '+String(b.build).slice(0,7)+' · branch main';
+    }
   }catch(e){
     document.getElementById('build').textContent='build bilgisi alınamadı';
     showError('Build API hatası: '+e.message);
