@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HattrickAI V6 · Maç Analizi</title>
+<style>
+:root{--bg:#eef3f0;--card:#fff;--ink:#1c2925;--muted:#69756f;--g:#19804c;--line:#d7e3db;--hi:#fff8e6;--red:#c0392b;--blue:#2980b9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.5}
+.wrap{max-width:1400px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.top a{color:var(--g);text-decoration:none;font-weight:800;font-size:13px}
+.card{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 4px 18px #0001;margin-bottom:14px;border:1px solid var(--line)}
+.brand{font-size:24px;font-weight:900}.brand span{color:var(--g)}
+.sub{color:var(--muted);font-size:12px;margin-top:4px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
+.controls label{display:block;font-size:10px;font-weight:900;color:#6f7872;margin-bottom:4px}
+.controls select,.controls input{width:100%;height:38px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-size:13px;background:#fff}
+.btn{border:0;border-radius:10px;background:var(--g);color:#fff;padding:12px 20px;font-weight:900;cursor:pointer;font-size:13px;transition:opacity .2s}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.secondary{background:#eef5f0;color:var(--g);border:1px solid #c5d9cc}
+.btn.primary{background:var(--g)}
+.btn.danger{background:var(--red)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;background:#e8f4ec;color:#1d6b42;font-size:10px;font-weight:900}
+.badge.warn{background:#fff3e0;color:#e65100}
+.badge.danger{background:#fdeaea;color:#c0392b}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:50vh}
+table{border-collapse:collapse;width:100%;min-width:800px;font-size:12px}
+th,td{border-bottom:1px solid #e8efea;padding:8px 10px;text-align:center;white-space:nowrap}
+th{position:sticky;top:0;background:#f4f8f5;font-size:10px;letter-spacing:.03em;color:#4d5a54;z-index:1}
+td.name,th.name{text-align:left;position:sticky;left:0;background:#fff;z-index:2;min-width:160px}
+th.name{background:#f4f8f5;z-index:3}
+tr:hover td{background:#f7fbf8}
+tr.selected td{background:#eef7f0}
+.skill{font-weight:800}
+.rating{font-weight:800;color:var(--g)}
+.rating.low{color:var(--red)}
+.rating.med{color:#e67e22}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.grid-7{display:grid;grid-template-columns:repeat(7,minmax(70px,1fr));gap:8px}
+.sector-card{background:#f6faf7;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.sector-card .label{font-size:10px;color:var(--muted);font-weight:900;margin-bottom:4px}
+.sector-card .value{font-size:18px;font-weight:900;color:var(--ink)}
+.sector-card .value.high{color:var(--g)}
+.sector-card .value.low{color:var(--red)}
+.sector-card .diff{font-size:10px;margin-top:4px}
+.formation-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.formation-item{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fafbfa;font-size:12px;cursor:pointer;transition:all .2s}
+.formation-item:hover{border-color:var(--g);background:#eef7f0}
+.formation-item.selected{border-color:var(--g);background:#eef7f0;font-weight:900}
+.formation-item .meta{font-size:10px;color:var(--muted);margin-top:4px}
+.tactic-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.tactic-card{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fafbfa;text-align:center;cursor:pointer;transition:all .2s}
+.tactic-card:hover{border-color:var(--g);background:#eef7f0}
+.tactic-card.selected{border-color:var(--g);background:#eef7f0}
+.tactic-card .name{font-weight:900;font-size:13px}
+.tactic-card .score{font-size:20px;font-weight:900;color:var(--g);margin:4px 0}
+.tactic-card .desc{font-size:10px;color:var(--muted)}
+.simulation-results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.sim-card{background:#f7f9f7;border:1px solid #edf0ee;border-radius:12px;padding:16px;text-align:center}
+.sim-card .label{font-size:10px;font-weight:900;color:#7a827d;margin-bottom:4px}
+.sim-card .value{font-size:28px;font-weight:900}
+.sim-card.win .value{color:#267448}
+.sim-card.draw .value{color:#8a6d1d}
+.sim-card.loss .value{color:#b33b32}
+.sim-card.goals .value{color:#27322d}
+.ai-explanation{background:#f4f8f5;border:1px solid var(--line);border-radius:12px;padding:16px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:500px;overflow:auto;line-height:1.6}
+.tabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:2px solid var(--line)}
+.tab{padding:10px 16px;border:0;background:transparent;font-weight:900;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted)}
+.spinner{width:24px;height:24px;border:3px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:spin 1s linear infinite;margin-right:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{background:#fff0ee;color:#9b3d33;padding:12px;border-radius:9px;font-size:12px;margin-top:12px;display:none}
+.pitch-preview{background:#1a5c2e;border-radius:12px;padding:20px;margin-top:12px;position:relative;min-height:300px}
+.pitch-slot{position:absolute;font-size:10px;text-align:center;min-width:60px}
+.pitch-slot .name{font-weight:900;font-size:11px}
+.pitch-slot .rating{font-size:10px;color:#a8e6c8}
+@media(max-width:900px){
+  .grid-2,.grid-3,.grid-7{grid-template-columns:1fr}
+  .simulation-results{grid-template-columns:1fr}
+  .tactic-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <a href="/hattrick.html">← Oyuncular</a>
+    <a href="/genel.html">Genel</a>
+    <a href="/manual-rating.html">Manuel Rating</a>
+    <span style="font-size:12px;color:#69756f">HattrickAI V6 · Maç Analizi Motoru</span>
+  </div>
+
+  <section class="card">
+    <div class="brand">Maç <span>Analizi</span></div>
+    <div class="sub">Kadro optimizasyonu, rakip analizi, taktik seçimi ve Monte Carlo simülasyonu</div>
+    
+    <div class="error" id="errorBox"></div>
+
+    <!-- Setup Section -->
+    <div class="card" style="margin-top:16px;padding:16px;background:#fafbfa">
+      <div style="font-weight:900;font-size:14px;margin-bottom:12px">📋 Maç Kurulumu</div>
+      <div class="controls">
+        <div>
+          <label>Bizim Takım</label>
+          <select id="ownTeamSelect">
+            <option value="">CHPP'den yüklenecek...</option>
+          </select>
+        </div>
+        <div>
+          <label>Rakip Takım</label>
+          <input type="text" id="opponentName" placeholder="Rakip takım adı" value="Rakip Takım">
+        </div>
+        <div>
+          <label>Koç Seviyesi</label>
+          <select id="coachLevel">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <div>
+          <label>Maç Yeri</label>
+          <select id="matchLocation">
+            <option value="0">Nötr</option>
+            <option value="1">Ev Sahibi</option>
+            <option value="-1">Deplasman</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <div>
+          <label>Tercih Edilen Diziliş</label>
+          <select id="preferredFormation">
+            <option value="">Otomatik seç</option>
+            <option value="3-5-2">3-5-2</option>
+            <option value="3-4-3">3-4-3</option>
+            <option value="4-4-2">4-4-2</option>
+            <option value="4-5-1">4-5-1</option>
+            <option value="4-3-3">4-3-3</option>
+            <option value="5-3-2">5-3-2</option>
+            <option value="5-4-1">5-4-1</option>
+            <option value="5-5-0">5-5-0</option>
+            <option value="2-5-3">2-5-3</option>
+          </select>
+        </div>
+        <div>
+          <label>Tercih Edilen Taktiği</label>
+          <select id="preferredTactic">
+            <option value="">Otomatik seç</option>
+            <option value="0">Normal</option>
+            <option value="1">Pres</option>
+            <option value="2">Kontra Atak</option>
+            <option value="3">Orta Saldırı</option>
+            <option value="4">Kanatlardan Atak</option>
+            <option value="8">Uzun Şutlar</option>
+          </select>
+        </div>
+        <div>
+          <label>Maç Tutumu</label>
+          <select id="preferredAttitude">
+            <option value="0">Normal</option>
+            <option value="-1">Sakin Oyna</option>
+            <option value="1">Sezonun Maçı</option>
+          </select>
+        </div>
+        <div>
+          <label>Simülasyon Sayısı</label>
+          <select id="simulationCount">
+            <option value="1000">1.000 (Hızlı)</option>
+            <option value="5000">5.000</option>
+            <option value="10000" selected>10.000 (Standart)</option>
+            <option value="20000">20.000</option>
+            <option value="50000">50.000 (Detaylı)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <label style="margin-bottom:0;font-size:10px">Öncelikler</label>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-weight:normal;font-size:12px"><input type="checkbox" id="prioWin" checked> Galibiyet odaklı</label>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-weight:normal;font-size:12px"><input type="checkbox" id="prioDraw"> Beraberlik yeterli</label>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-weight:normal;font-size:12px"><input type="checkbox" id="prioAttack"> Hücum ağırlıklı</label>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-weight:normal;font-size:12px"><input type="checkbox" id="prioDefence"> Savunma ağırlıklı</label>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-weight:normal;font-size:12px"><input type="checkbox" id="prioKeepFormation"> Dizilişi koru</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn primary" id="analyzeBtn" onclick="runAnalysis()">
+          <span id="btnText">🔍 Analizi Başlat</span>
+          <span id="btnLoading" class="spinner" style="display:none"></span>
+        </button>
+        <button class="btn secondary" onclick="loadOwnTeam()">CHPP Oyuncularını Yükle</button>
+        <span class="badge" id="playerCount">0 oyuncu</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Tabs -->
+  <section class="card" id="resultsSection" style="display:none">
+    <div class="tabs">
+      <button class="tab active" data-tab="overview">📊 Genel Bakış</button>
+      <button class="tab" data-tab="positions">👥 Pozisyon Analizi</button>
+      <button class="tab" data-tab="formations">🏗️ Dizilişler</button>
+      <button class="tab" data-tab="opponent">🎯 Rakip Analizi</button>
+      <button class="tab" data-tab="tactics">⚽ Taktikler</button>
+      <button class="tab" data-tab="simulation">🎲 Simülasyon</button>
+      <button class="tab" data-tab="decision">🏆 Nihai Karar</button>
+      <button class="tab" data-tab="explanation">🤖 AI Açıklaması</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="grid-3">
+        <div class="card">
+          <div class="sub">EN İYİ 11</div>
+          <div id="overviewBest11" style="font-size:12px">Analiz bekleniyor...</div>
+        </div>
+        <div class="card">
+          <div class="sub">DİZİLİŞ</div>
+          <div id="overviewFormation" style="font-size:24px;font-weight:900;color:var(--g)">—</div>
+        </div>
+        <div class="card">
+          <div class="sub">TAKTİK</div>
+          <div id="overviewTactic" style="font-size:24px;font-weight:900;color:var(--g)">—</div>
+        </div>
+      </div>
+      
+      <div class="grid-3" style="margin-top:14px">
+        <div class="card">
+          <div class="sub">GALİBİYET OLASILIĞI</div>
+          <div id="overviewWin" style="font-size:32px;font-weight:900;color:#267448">—%</div>
+        </div>
+        <div class="card">
+          <div class="sub">BEKLENEN GOL</div>
+          <div id="overviewGoals" style="font-size:32px;font-weight:900">— - —</div>
+        </div>
+        <div class="card">
+          <div class="sub">BEKLENEN PUAN</div>
+          <div id="overviewPoints" style="font-size:32px;font-weight:900;color:var(--blue)">—</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="sub">SEKTÖR RATINGLERİ (Bizim Takım vs Rakip)</div>
+        <div class="grid-7" id="overviewSectors"></div>
+      </div>
+    </div>
+
+    <!-- Positions Tab -->
+    <div class="tab-panel" id="tab-positions">
+      <div class="card">
+        <div class="sub">Tüm oyuncuların her pozisyondaki rating katkısı</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="name">Oyuncu</th>
+                <th>En İyi Poz</th>
+                <th>Rating</th>
+                <th>GK</th>
+                <th>DEF-C</th>
+                <th>DEF-L/R</th>
+                <th>WB-L/R</th>
+                <th>IM-C</th>
+                <th>IM-L/R</th>
+                <th>W-L/R</th>
+                <th>FW-C</th>
+                <th>FW-L/R</th>
+              </tr>
+            </thead>
+            <tbody id="positionsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formations Tab -->
+    <div class="tab-panel" id="tab-formations">
+      <div class="card">
+        <div class="sub">Geçerli dizilişlerin yapısal skorları ve en iyi 11 atamaları</div>
+        <div id="formationsList" class="formation-list"></div>
+      </div>
+    </div>
+
+    <!-- Opponent Tab -->
+    <div class="tab-panel" id="tab-opponent">
+      <div class="grid-2">
+        <div class="card">
+          <div class="sub">Rakip Bölgesel Ratingler</div>
+          <div class="grid-7" id="opponentSectors"></div>
+        </div>
+        <div class="card">
+          <div class="sub">Rakip Analizi Özeti</div>
+          <div id="opponentSummary" style="font-size:13px;line-height:1.8">Analiz bekleniyor...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tactics Tab -->
+    <div class="tab-panel" id="tab-tactics">
+      <div class="card">
+        <div class="sub">Taktik değerlendirme skorları (Takım uyumu, Rakip karşılaşması, Fırsat maliyeti)</div>
+        <div class="tactic-grid" id="tacticsGrid"></div>
+      </div>
+    </div>
+
+    <!-- Simulation Tab -->
+    <div class="tab-panel" id="tab-simulation">
+      <div class="simulation-results">
+        <div class="sim-card win">
+          <div class="label">GALİBİYET</div>
+          <div class="value" id="simWin">—%</div>
+        </div>
+        <div class="sim-card draw">
+          <div class="label">BERABERLİK</div>
+          <div class="value" id="simDraw">—%</div>
+        </div>
+        <div class="sim-card loss">
+          <div class="label">MAĞLUBİYET</div>
+          <div class="value" id="simLoss">—%</div>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:14px">
+        <div class="sim-card goals">
+          <div class="label">BEKLENEN ATILAN GOL</div>
+          <div class="value" id="simExpGoals">—</div>
+        </div>
+        <div class="sim-card goals">
+          <div class="label">BEKLENEN YENİLEN GOL</div>
+          <div class="value" id="simExpGoalsAgainst">—</div>
+        </div>
+        <div class="sim-card goals">
+          <div class="label">EN OLASI SKOR</div>
+          <div class="value" style="font-size:22px" id="simMostLikely">—</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="sub">Skor Dağılımı (En olası 10 skor)</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Skor</th><th>Olasılık</th><th>Adet</th></tr></thead>
+            <tbody id="scoreTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="sub">Senaryo Analizi</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Senaryo</th><th>Galibiyet</th><th>Beraberlik</th><th>Mağlubiyet</th><th>En Olası Skor</th></tr></thead>
+            <tbody id="scenarioTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decision Tab -->
+    <div class="tab-panel" id="tab-decision">
+      <div class="card">
+        <div class="sub">Nihai Seçim: Formasyon + İlk 11 + Pozisyon Emirleri + Taktiği</div>
+        
+        <div class="grid-2">
+          <div>
+            <div style="font-weight:900;margin-bottom:8px">📋 İlk 11</div>
+            <div id="decisionLineup" style="font-size:12px;line-height:1.8"></div>
+          </div>
+          <div>
+            <div style="font-weight:900;margin-bottom:8px">⚙️ Ayarlar</div>
+            <div id="decisionSettings" style="font-size:12px;line-height:1.8"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding:12px;background:#f4f8f5;border-radius:10px;border:1px solid var(--line)">
+          <div style="font-weight:900;margin-bottom:8px">🏆 Formasyon Yarışması</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Diziliş</th><th>Beklenti Puanı</th><th>Galibiyet %</th><th>En Olası Skor</th><th>Derinlik</th></tr></thead>
+              <tbody id="formationCompetitionTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explanation Tab -->
+    <div class="tab-panel" id="tab-explanation">
+      <div class="card">
+        <div class="sub">AI Destekli Analiz Açıklaması</div>
+        <div class="ai-explanation" id="aiExplanation">Analiz tamamlandığında burada detaylı açıklama görünecek...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div class="card" style="max-width:400px;text-align:center;padding:40px">
+      <div class="spinner" style="margin:0 auto 16px"></div>
+      <div id="loadingText" style="font-weight:900">Analiz yapılıyor...</div>
+      <div id="loadingDetail" style="color:var(--muted);font-size:12px;margin-top:8px"></div>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { createMatchAnalysisEngine } from '/engines/index.js';
+
+// Global state
+let engine = null;
+let ownPlayers = [];
+let currentAnalysis = null;
+let currentTab = 'overview';
+
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+  setupTabs();
+  await initializeEngine();
+  await loadOwnTeam();
+});
+
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      currentTab = btn.dataset.tab;
+    });
+  });
+}
+
+async function initializeEngine() {
+  engine = createMatchAnalysisEngine();
+  
+  // Load rating formulas from existing data
+  if (window.GENEL_ALL_HEX) {
+    try {
+      await engine.initializeRatingEngine(window.GENEL_ALL_HEX);
+      console.log('Rating engine initialized');
+    } catch (e) {
+      console.error('Failed to load rating formulas:', e);
+      showError('Rating formülleri yüklenemedi: ' + e.message);
+    }
+  }
+}
+
+async function loadOwnTeam() {
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Yükleniyor...';
+  
+  try {
+    const response = await fetch('/api/v5/team-player-export', { 
+      cache: 'no-store', 
+      credentials: 'same-origin' 
+    });
+    const text = await response.text();
+    let data = {};
+    try { data = text ? JSON.parse(text) : {}; } catch { throw new Error('Geçersiz JSON'); }
+    if (!response.ok) throw new Error(data.message || data.detail || ('HTTP ' + response.status));
+    
+    ownPlayers = (data.players || []).map(normalizePlayer);
+    document.getElementById('playerCount').textContent = ownPlayers.length + ' oyuncu';
+    document.getElementById('ownTeamSelect').innerHTML = '<option value="current">Mevcut takım (' + ownPlayers.length + ' oyuncu)</option>';
+    
+    if (ownPlayers.length === 0) {
+      showError('Hiç oyuncu yüklenemedi. CHPP bağlantısını kontrol edin.');
+    }
+  } catch (e) {
+    showError('Oyuncu verisi yüklenemedi: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span id="btnText">🔍 Analizi Başlat</span>';
+  }
+}
+
+function normalizePlayer(p) {
+  return {
+    id: Number(p.id || p.playerId),
+    name: p.name || [p.firstName, p.lastName].filter(Boolean).join(' ') || '#' + (p.id || ''),
+    keeper: Number(p.keeper ?? p.goalkeeping ?? 0),
+    defending: Number(p.defending ?? 0),
+    playmaking: Number(p.playmaking ?? 0),
+    passing: Number(p.passing ?? 0),
+    winger: Number(p.winger ?? 0),
+    scoring: Number(p.scoring ?? 0),
+    setPieces: Number(p.setPieces ?? 0),
+    stamina: Number(p.stamina ?? 0),
+    form: Number(p.form ?? 0),
+    experience: Number(p.experience ?? 0),
+    loyalty: Number(p.loyalty ?? 0),
+    specialty: p.specialty ? parseSpecialty(p.specialty) : 0,
+    age: p.age ? Number(p.age) : undefined,
+    ageDays: p.ageDays ? Number(p.ageDays) : undefined,
+    tsi: p.tsi ? Number(p.tsi) : undefined,
+    salary: p.salary ? Number(p.salary) : undefined,
+    leadership: p.leadership ? Number(p.leadership) : undefined,
+    shirtNumber: p.shirtNumber ? Number(p.shirtNumber) : undefined,
+    cards: p.cards ? Number(p.cards) : undefined,
+    lastMatchDate: p.lastMatchDate,
+    lastMatchRating: p.lastMatchRating ? Number(p.lastMatchRating) : undefined,
+    arrivalDate: p.arrivalDate,
+    bestPosition: p.bestPosition,
+    nationality: p.nationality,
+    firstName: p.firstName,
+    lastName: p.lastName,
+    injuryLevel: p.injuryLevel ? Number(p.injuryLevel) : -1
+  };
+}
+
+function parseSpecialty(value) {
+  if (typeof value === 'number') return value;
+  const upper = value.toUpperCase();
+  const map = { 'TECHNICAL': 1, 'QUICK': 2, 'POWERFUL': 3, 'UNPREDICTABLE': 4, 'HEAD': 5, 'NONE': 0 };
+  return map[upper] || 0;
+}
+
+function getPriorities() {
+  const prios = [];
+  if (document.getElementById('prioWin').checked) prios.push('win');
+  if (document.getElementById('prioDraw').checked) prios.push('draw');
+  if (document.getElementById('prioAttack').checked) prios.push('attack');
+  if (document.getElementById('prioDefence').checked) prios.push('defence');
+  if (document.getElementById('prioKeepFormation').checked) prios.push('keepFormation');
+  return prios;
+}
+
+async function runAnalysis() {
+  if (ownPlayers.length === 0) {
+    showError('Önce CHPP oyuncu verilerini yükleyin.');
+    return;
+  }
+  
+  if (!engine.isReady()) {
+    showError('Rating motoru henüz hazır değil. Lütfen bekleyin.');
+    return;
+  }
+
+  const btn = document.getElementById('analyzeBtn');
+  const btnText = document.getElementById('btnText');
+  const btnLoading = document.getElementById('btnLoading');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const loadingText = document.getElementById('loadingText');
+  const loadingDetail = document.getElementById('loadingDetail');
+
+  btn.disabled = true;
+  btnText.textContent = 'Analiz ediliyor...';
+  btnLoading.style.display = 'inline-block';
+  loadingOverlay.style.display = 'flex';
+  loadingDetail.textContent = 'Hazırlanıyor...';
+  
+  hideError();
+  document.getElementById('resultsSection').style.display = 'none';
+
+  const request = {
+    ownTeam: {
+      teamName: 'Bizim Takım',
+      players: ownPlayers,
+      preferredFormation: document.getElementById('preferredFormation').value || undefined,
+      preferredTactic: document.getElementById('preferredTactic').value ? parseInt(document.getElementById('preferredTactic').value) : undefined,
+      preferredAttitude: parseInt(document.getElementById('preferredAttitude').value),
+      coachLevel: parseInt(document.getElementById('coachLevel').value),
+      matchLocation: parseInt(document.getElementById('matchLocation').value),
+      priorities: getPriorities()
+    },
+    opponentTeam: {
+      teamName: document.getElementById('opponentName').value || 'Rakip Takım',
+      players: [], // Would need opponent CHPP data
+      knownFormation: undefined,
+      knownTactic: undefined
+    },
+    simulationConfig: {
+      simulationCount: parseInt(document.getElementById('simulationCount').value)
+    }
+  };
+
+  try {
+    const steps = [
+      { key: 'position-optimization', label: 'Pozisyon optimizasyonu...' },
+      { key: 'formation-optimization', label: 'Diziliş optimizasyonu...' },
+      { key: 'opponent-analysis', label: 'Rakip analizi...' },
+      { key: 'tactical-decision', label: 'Taktik karar motoru...' },
+      { key: 'match-simulation', label: 'Monte Carlo simülasyonu...' },
+      { key: 'final-decision', label: 'Nihai karar...' },
+      { key: 'ai-explanation', label: 'AI açıklaması oluşturuluyor...' }
+    ];
+    
+    let stepIndex = 0;
+    const stepInterval = setInterval(() => {
+      if (stepIndex < steps.length) {
+        loadingText.textContent = steps[stepIndex].label;
+        stepIndex++;
+      }
+    }, 800);
+
+    const result = await engine.analyze(request);
+    
+    clearInterval(stepInterval);
+    loadingOverlay.style.display = 'none';
+    btn.disabled = false;
+    btnText.textContent = '🔍 Analizi Başlat';
+    btnLoading.style.display = 'none';
+    
+    currentAnalysis = result;
+    document.getElementById('resultsSection').style.display = 'block';
+    renderAllTabs(result);
+    
+    // Scroll to results
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+  } catch (e) {
+    clearInterval(stepInterval);
+    loadingOverlay.style.display = 'none';
+    btn.disabled = false;
+    btnText.textContent = '🔍 Analizi Başlat';
+    btnLoading.style.display = 'none';
+    showError('Analiz hatası: ' + e.message);
+    console.error(e);
+  }
+}
+
+function renderAllTabs(result) {
+  renderOverview(result);
+  renderPositions(result);
+  renderFormations(result);
+  renderOpponent(result);
+  renderTactics(result);
+  renderSimulation(result);
+  renderDecision(result);
+  renderExplanation(result);
+}
+
+// ==================== RENDER FUNCTIONS ====================
+
+function renderOverview(result) {
+  const { finalDecision, matchSimulation, formationOptimization, tacticalDecision, opponentAnalysis } = result;
+  
+  // Best 11
+  const lineup = finalDecision.bestPlan.lineup;
+  const lineupHtml = lineup.slots.map(s => {
+    const orderNames = ['', 'Def', 'Of', 'Merk', 'Kan'];
+    const orderStr = s.order ? ` (${orderNames[s.order]})` : '';
+    return `<div>${s.playerName} → ${s.code}${orderStr} <span class="rating">${s.rating.toFixed(2)}</span></div>`;
+  }).join('');
+  document.getElementById('overviewBest11').innerHTML = lineupHtml;
+  
+  // Formation & Tactic
+  document.getElementById('overviewFormation').textContent = finalDecision.bestPlan.formation;
+  document.getElementById('overviewTactic').textContent = getTacticName(tacticalDecision.bestTactic.tactic);
+  
+  // Probabilities
+  document.getElementById('overviewWin').textContent = (finalDecision.prediction.winProbability * 100).toFixed(1) + '%';
+  document.getElementById('overviewGoals').textContent = 
+    finalDecision.prediction.expectedHomeGoals.toFixed(2) + ' - ' + finalDecision.prediction.expectedAwayGoals.toFixed(2);
+  document.getElementById('overviewPoints').textContent = (3 * finalDecision.prediction.winProbability + finalDecision.prediction.drawProbability).toFixed(2);
+  
+  // Sectors
+  const ownRatings = finalDecision.bestPlan.rating;
+  const oppRatings = opponentAnalysis.regionalRatings;
+  const sectors = [
+    { key: 'leftDefence', label: 'SOL DEF', own: ownRatings.leftDefence, opp: oppRatings.leftDefenceStrength },
+    { key: 'centralDefence', label: 'MERKEZ DEF', own: ownRatings.centralDefence, opp: oppRatings.centralDefenceStrength },
+    { key: 'rightDefence', label: 'SAĞ DEF', own: ownRatings.rightDefence, opp: oppRatings.rightDefenceStrength },
+    { key: 'midfield', label: 'ORTA SAHA', own: ownRatings.midfield, opp: oppRatings.midfieldStrength },
+    { key: 'leftAttack', label: 'SOL ATT', own: ownRatings.leftAttack, opp: oppRatings.leftAttackStrength },
+    { key: 'centralAttack', label: 'MERKEZ ATT', own: ownRatings.centralAttack, opp: oppRatings.centralAttackStrength },
+    { key: 'rightAttack', label: 'SAĞ ATT', own: ownRatings.rightAttack, opp: oppRatings.rightAttackStrength }
+  ];
+  
+  document.getElementById('overviewSectors').innerHTML = sectors.map(s => {
+    const diff = s.own - s.opp;
+    const diffClass = diff > 1 ? 'high' : diff < -1 ? 'low' : '';
+    const diffText = diff > 0 ? '▲' + diff.toFixed(1) : diff < 0 ? '▼' + diff.toFixed(1) : '—';
+    return `<div class="sector-card">
+      <div class="label">${s.label}</div>
+      <div class="value ${diffClass}">${s.own.toFixed(1)}</div>
+      <div class="diff">Rakip: ${s.opp.toFixed(1)} <span class="${diffClass}">(${diffText})</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderPositions(result) {
+  const { positionOptimization } = result;
+  const slots = ['GK', 'DEF-C', 'DEF-CL', 'DEF-CR', 'WB-L', 'WB-R', 'IM-C', 'IM-L', 'IM-R', 'W-L', 'W-R', 'FW-C', 'FW-L', 'FW-R'];
+  
+  document.getElementById('positionsTable').innerHTML = positionOptimization.map(p => {
+    const cells = slots.map(slot => {
+      const rating = p.ratings.find(r => r.positionCode === slot);
+      if (!rating || rating.totalRating === 0) return '<td>—</td>';
+      const cls = rating.totalRating > 12 ? 'skill' : rating.totalRating > 8 ? '' : 'rating low';
+      return `<td class="${cls}">${rating.totalRating.toFixed(2)}</td>`;
+    }).join('');
+    
+    const best = p.bestPosition;
+    const orderNames = ['Normal', 'Defansif', 'Ofansif', 'Merkeze', 'Kanada'];
+    
+    return `<tr>
+      <td class="name"><b>${p.playerName}</b><div style="font-size:10px;color:var(--muted)">#${p.playerId}</div></td>
+      <td><b>${best.positionCode}</b> <span style="font-size:10px;color:var(--muted)">${orderNames[best.order]}</span></td>
+      <td class="rating">${best.rating.toFixed(2)}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+}
+
+function renderFormations(result) {
+  const { formationOptimization } = result;
+  
+  document.getElementById('formationsList').innerHTML = formationOptimization.candidates.map((c, idx) => {
+    const isBest = idx === 0;
+    const isUser = formationOptimization.userPreferredFormation && c.formation === formationOptimization.userPreferredFormation.formation;
+    
+    return `<div class="formation-item ${isBest ? 'selected' : ''} ${isUser ? 'selected' : ''}" onclick="selectFormation('${c.formation}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>${c.formation}</b>
+        <span class="badge ${isBest ? '' : 'warn'}">${isBest ? 'EN İYİ' : (isUser ? 'TERCİH' : '#' + (idx + 1))}</span>
+      </div>
+      <div class="meta">Yapısal skor: ${c.structuralScore.toFixed(3)} | ${c.bestAssignment.length}/11 dolu</div>
+      <div class="meta" style="margin-top:4px">
+        ${c.bestAssignment.map(a => `${a.slotCode}:${a.playerName}(${a.orderNames[a.order]})`).join(' • ')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderOpponent(result) {
+  const { opponentAnalysis } = result;
+  
+  const sectors = [
+    { key: 'leftDefence', label: 'SOL DEF', value: opponentAnalysis.leftDefenceStrength },
+    { key: 'centralDefence', label: 'MERKEZ DEF', value: opponentAnalysis.centralDefenceStrength },
+    { key: 'rightDefence', label: 'SAĞ DEF', value: opponentAnalysis.rightDefenceStrength },
+    { key: 'midfield', label: 'ORTA SAHA', value: opponentAnalysis.midfieldStrength },
+    { key: 'leftAttack', label: 'SOL ATT', value: opponentAnalysis.leftAttackStrength },
+    { key: 'centralAttack', label: 'MERKEZ ATT', value: opponentAnalysis.centralAttackStrength },
+    { key: 'rightAttack', label: 'SAĞ ATT', value: opponentAnalysis.rightAttackStrength }
+  ];
+  
+  document.getElementById('opponentSectors').innerHTML = sectors.map(s => {
+    const cls = s.value > 12 ? 'high' : s.value < 8 ? 'low' : '';
+    return `<div class="sector-card">
+      <div class="label">${s.label}</div>
+      <div class="value ${cls}">${s.value.toFixed(1)}</div>
+    </div>`;
+  }).join('');
+  
+  let summary = `<b>Takım:</b> ${opponentAnalysis.teamName}<br>`;
+  summary += `<b>Tahmini Diziliş:</b> ${opponentAnalysis.predictedFormation || 'Bilinmiyor'}<br>`;
+  summary += `<b>Tahmini Taktiği:</b> ${getTacticName(opponentAnalysis.predictedTactic) || 'Bilinmiyor'}<br><br>`;
+  summary += `<b>Orta Saha:</b> ${opponentAnalysis.midfieldStrength.toFixed(1)}<br>`;
+  summary += `<b>Hücum (S/M/Sa):</b> ${opponentAnalysis.leftAttackStrength.toFixed(1)} / ${opponentAnalysis.centralAttackStrength.toFixed(1)} / ${opponentAnalysis.rightAttackStrength.toFixed(1)}<br>`;
+  summary += `<b>Savunma (S/M/Sa):</b> ${opponentAnalysis.leftDefenceStrength.toFixed(1)} / ${opponentAnalysis.centralDefenceStrength.toFixed(1)} / ${opponentAnalysis.rightDefenceStrength.toFixed(1)}<br>`;
+  summary += `<b>Savunma Dengesi:</b> ${(opponentAnalysis.defenceBalance * 100).toFixed(0)}%<br><br>`;
+  
+  if (opponentAnalysis.advantages.length > 0) {
+    summary += `<b style="color:var(--g)">Avantajlarımız:</b><ul>`;
+    opponentAnalysis.advantages.forEach(a => summary += `<li>${a}</li>`);
+    summary += `</ul>`;
+  }
+  if (opponentAnalysis.disadvantages.length > 0) {
+    summary += `<b style="color:var(--red)">Dezavantajlarımız:</b><ul>`;
+    opponentAnalysis.disadvantages.forEach(d => summary += `<li>${d}</li>`);
+    summary += `</ul>`;
+  }
+  if (opponentAnalysis.missingData.length > 0) {
+    summary += `<b style="color:var(--muted)">Eksik Veriler:</b><ul>`;
+    opponentAnalysis.missingData.forEach(m => summary += `<li>${m}</li>`);
+    summary += `</ul>`;
+  }
+  
+  document.getElementById('opponentSummary').innerHTML = summary;
+}
+
+function renderTactics(result) {
+  const { tacticalDecision } = result;
+  
+  document.getElementById('tacticsGrid').innerHTML = tacticalDecision.evaluations.map(t => {
+    const isBest = t.tactic === tacticalDecision.bestTactic.tactic;
+    const isUser = tacticalDecision.userPreferredTactic && t.tactic === tacticalDecision.userPreferredTactic.tactic;
+    
+    return `<div class="tactic-card ${isBest ? 'selected' : ''} ${isUser ? 'selected' : ''}">
+      <div class="name">${t.tacticName} ${isBest ? '⭐' : ''} ${isUser ? '(Tercih)' : ''}</div>
+      <div class="score">${(t.overallScore * 100).toFixed(0)}%</div>
+      <div class="desc">Takım: ${(t.squadFitScore*100).toFixed(0)}% | Rakip: ${(t.matchupScore*100).toFixed(0)}% | Maliyet: ${(t.opportunityCost*100).toFixed(0)}%</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:left">${t.explanation}</div>
+      ${t.riskFactors.length > 0 ? `<div style="font-size:10px;color:var(--red);margin-top:4px;text-align:left">⚠ ${t.riskFactors.join('; ')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderSimulation(result) {
+  const { matchSimulation } = result;
+  
+  document.getElementById('simWin').textContent = (matchSimulation.winProbability * 100).toFixed(1) + '%';
+  document.getElementById('simDraw').textContent = (matchSimulation.drawProbability * 100).toFixed(1) + '%';
+  document.getElementById('simLoss').textContent = (matchSimulation.lossProbability * 100).toFixed(1) + '%';
+  document.getElementById('simExpGoals').textContent = matchSimulation.expectedHomeGoals.toFixed(2);
+  document.getElementById('simExpGoalsAgainst').textContent = matchSimulation.expectedAwayGoals.toFixed(2);
+  document.getElementById('simMostLikely').textContent = matchSimulation.mostLikelyScore + ' (%' + (matchSimulation.mostLikelyScoreProbability * 100).toFixed(1) + ')';
+  
+  // Score table
+  document.getElementById('scoreTable').innerHTML = (matchSimulation.scoreFrequencies || []).slice(0, 10).map(s => `
+    <tr>
+      <td style="font-weight:900;font-size:14px">${s.score}</td>
+      <td>${(s.probability * 100).toFixed(2)}%</td>
+      <td>${s.count}</td>
+    </tr>
+  `).join('');
+  
+  // Scenario table
+  document.getElementById('scenarioTable').innerHTML = (matchSimulation.scenarioResults || []).map(s => `
+    <tr>
+      <td style="font-weight:900">${s.name}</td>
+      <td>${(s.winProbability * 100).toFixed(1)}%</td>
+      <td>${(s.drawProbability * 100).toFixed(1)}%</td>
+      <td>${(s.lossProbability * 100).toFixed(1)}%</td>
+      <td style="font-weight:900">${s.mostLikelyScore}</td>
+    </tr>
+  `).join('');
+}
+
+function renderDecision(result) {
+  const { finalDecision } = result;
+  
+  // Lineup
+  const lineupHtml = finalDecision.bestPlan.lineup.slots.map(s => {
+    const orderNames = ['Normal', 'Defansif', 'Ofansif', 'Merkeze', 'Kanada'];
+    return `<div>${s.playerName} → ${s.code} ${s.order > 0 ? '(' + orderNames[s.order] + ')' : ''} <span class="rating">${s.rating.toFixed(2)}</span></div>`;
+  }).join('');
+  document.getElementById('decisionLineup').innerHTML = lineupHtml;
+  
+  // Settings
+  const tacticName = getTacticName(finalDecision.bestPlan.matchup?.tactic);
+  const attitudeName = ['Sakin Oyna', 'Normal', 'Sezonun Maçı'][finalDecision.selectedApproach + 1] || 'Normal';
+  document.getElementById('decisionSettings').innerHTML = `
+    <div><b>Diziliş:</b> ${finalDecision.bestPlan.formation}</div>
+    <div><b>Taktiği:</b> ${tacticName}</div>
+    <div><b>Tutum:</b> ${attitudeName}</div>
+    <div><b>Galibiyet:</b> %${(finalDecision.prediction.winProbability * 100).toFixed(1)}</div>
+    <div><b>Beraberlik:</b> %${(finalDecision.prediction.drawProbability * 100).toFixed(1)}</div>
+    <div><b>Mağlubiyet:</b> %${(finalDecision.prediction.lossProbability * 100).toFixed(1)}</div>
+  `;
+  
+  // Formation competition
+  document.getElementById('formationCompetitionTable').innerHTML = (finalDecision.formationCompetition || []).map(fc => `
+    <tr>
+      <td>${fc.rank}</td>
+      <td style="font-weight:900">${fc.formation}</td>
+      <td>${fc.expectedPoints.toFixed(2)}</td>
+      <td>${(fc.winProbability * 100).toFixed(1)}%</td>
+      <td style="font-weight:900">${fc.mostLikelyScore}</td>
+      <td><span class="badge ${fc.searchDepthStatus === 'Sufficient' ? '' : 'warn'}">${fc.searchDepthStatus}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderExplanation(result) {
+  document.getElementById('aiExplanation').textContent = result.aiExplanation || 'Açıklama oluşturulamadı.';
+}
+
+// ==================== HELPERS ====================
+
+function getTacticName(tactic) {
+  if (tactic === undefined || tactic === null) return '—';
+  const names = { 0: 'Normal', 1: 'Pres', 2: 'Kontra Atak', 3: 'Orta Saldırı', 4: 'Kanatlardan Atak', 7: 'Yaratıcı', 8: 'Uzun Şutlar' };
+  return names[tactic] || 'Normal';
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+function selectFormation(formation) {
+  document.getElementById('preferredFormation').value = formation;
+  // Re-render formations to show selection
+  if (currentAnalysis) renderFormations(currentAnalysis);
+}
+
+window.runAnalysis = runAnalysis;
+window.loadOwnTeam = loadOwnTeam;
+window.selectFormation = selectFormation;
+</script>
+</body>
+</html>

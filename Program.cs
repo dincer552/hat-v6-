@@ -50,6 +50,7 @@ if (build.Length > 7) build = build[..7];
 
 app.MapGet("/hattrick", (ChppDebugLog log) => { log.Info("15-HOME", "/hattrick ana sayfasına yönlendiriliyor."); return Results.Redirect("/hattrick.html"); });
 app.MapGet("/chpp-logs", () => Results.Redirect("/chpp-logs.html"));
+app.MapGet("/match-analysis", () => Results.Redirect("/match-analysis.html"));
 app.MapGet("/api/chpp/logs", (ChppDebugLog log) => Results.Ok(new { entries = log.GetRecent(300) }));
 app.MapPost("/api/chpp/logs/clear", (ChppDebugLog log) => { log.Clear(); return Results.Ok(new { ok = true }); });
 app.MapGet("/health", () => Results.Ok(new { ok = true, service = "HattrickAI V6", build }));
@@ -66,6 +67,28 @@ app.MapGet("/api/v5/team-player-export", async (TeamPlayerChppExportService serv
     try { return Results.Ok(await service.ExportAsync(build, ct)); }
     catch (UnauthorizedAccessException) { return Results.Unauthorized(); }
     catch (Exception ex) { return Results.Problem(ex.Message); }
+});
+
+// V6 Match Analysis API - Server-side analysis endpoint
+app.MapPost("/api/v6/analysis", async (MatchAnalysisRequest request, HttpContext http, ChppV5 chpp, CancellationToken ct) =>
+{
+    if (!chpp.Connected)
+        return Results.Unauthorized();
+
+    try
+    {
+        // This endpoint can be used for server-side analysis
+        // For now, return the request for client-side processing
+        return Results.Ok(new { 
+            status = "ready", 
+            message = "Client-side analysis engines available at /engines/index.ts",
+            request 
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
 });
 
 app.MapGet("/auth/chpp/start", async (HttpContext http, ChppV5 chpp, ChppDebugLog log, CancellationToken ct) =>
@@ -238,4 +261,95 @@ app.Run();
 public sealed record AiChatRequest(List<AiChatMessage>? Messages, string? TeamContext = null);
 public sealed record AiFeedbackRequest(string? RecordId, string? Feedback);
 public sealed record AiChatMessage(string? Role, string? Content);
+
+// V6 Analysis request/response models
+public sealed record MatchAnalysisRequest(
+    OwnTeamDto OwnTeam,
+    OpponentTeamDto OpponentTeam,
+    SimulationConfigDto? SimulationConfig = null
+);
+
+public sealed record OwnTeamDto(
+    string TeamName,
+    List<PlayerDto> Players,
+    string? PreferredFormation = null,
+    int? PreferredTactic = null,
+    int? PreferredAttitude = null,
+    int? CoachLevel = null,
+    int? MatchLocation = null,
+    List<string>? Priorities = null
+);
+
+public sealed record OpponentTeamDto(
+    string TeamName,
+    List<PlayerDto>? Players = null,
+    LineupDto? Lineup = null,
+    RegionalRatingSnapshotDto? RegionalRatings = null,
+    string? KnownFormation = null,
+    int? KnownTactic = null
+);
+
+public sealed record PlayerDto(
+    int Id,
+    string Name,
+    int Keeper,
+    int Defending,
+    int Playmaking,
+    int Passing,
+    int Winger,
+    int Scoring,
+    int SetPieces,
+    int Stamina,
+    int Form,
+    int Experience,
+    int Loyalty,
+    int Specialty = 0,
+    int? Age = null,
+    int? AgeDays = null,
+    int? Tsi = null,
+    int? Salary = null,
+    int? Leadership = null,
+    int? ShirtNumber = null,
+    int? Cards = null,
+    string? LastMatchDate = null,
+    double? LastMatchRating = null,
+    string? ArrivalDate = null,
+    string? BestPosition = null,
+    string? Nationality = null,
+    string? FirstName = null,
+    string? LastName = null,
+    int? InjuryLevel = null
+);
+
+public sealed record LineupDto(string TeamName, string Formation, List<SlotDto> Slots);
+
+public sealed record SlotDto(
+    string Code,
+    string Label,
+    string Description,
+    string? PlayerName,
+    int PlayerId,
+    double Rating,
+    double X,
+    double Y,
+    int Order = 0,
+    double? HistoricalStars = null
+);
+
+public sealed record RegionalRatingSnapshotDto(
+    double LeftDefence,
+    double CentralDefence,
+    double RightDefence,
+    double Midfield,
+    double LeftAttack,
+    double CentralAttack,
+    double RightAttack
+);
+
+public sealed record SimulationConfigDto(
+    int SimulationCount = 10000,
+    int MatchTicks = 18,
+    int Seed = 9051,
+    bool IncludeScenarios = true
+);
 
