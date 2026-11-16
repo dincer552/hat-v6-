@@ -226,6 +226,11 @@
         ctx.fillStyle = "#fff";
         ctx.fillText("GAME START", 65, 130);
         ctx.fillText("PASS WORD  -----", 65, 148);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(42, 126, 6, 2);
+        ctx.fillRect(44, 123, 2, 8);
+        ctx.fillRect(40, 124, 2, 6);
+        ctx.fillRect(48, 124, 2, 6);
         ctx.font = "bold 10px monospace";
         ctx.fillText("© 1992 KONAMI CO., LTD.", 37, 171);
         ctx.fillText("LICENSED BY NINTENDO", 49, 185);
@@ -233,6 +238,7 @@
 
       function renderSelection() {
         cursor.style.top = selected === 0 ? "59.7%" : "67.4%";
+        cursor.style.display = selected === 0 ? "none" : "block";
         mask.style.display = selected === 0 ? "none" : "block";
         status.classList.remove("visible");
         status.textContent = "";
