@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <meta name="description" content="Bucky O'Hare NES açılış ekranı">
+  <title>Bucky O'Hare — NES</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; min-height: 100%; margin: 0; }
+    body {
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 48%, #17121d 0, #09080c 38%, #030303 76%);
+      color: #fff;
+      font-family: "Courier New", monospace;
+    }
+    .cabinet {
+      width: min(94vw, 960px, calc(78svh * 4 / 3));
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+    .screen-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid #413a49;
+      box-shadow:
+        0 0 0 5px #111,
+        0 0 0 7px #29232e,
+        0 18px 70px #000,
+        0 0 60px #7d22b52b;
+      isolation: isolate;
+    }
+    .screen-frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      opacity: .16;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 3px,
+        #000 4px
+      );
+    }
+    #original-screen, #fallback-screen {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      image-rendering: pixelated;
+      background: #000;
+    }
+    #fallback-screen { display: none; }
+    .cursor-mask {
+      position: absolute;
+      z-index: 2;
+      left: 14.0%;
+      top: 59.5%;
+      width: 5.2%;
+      height: 5.6%;
+      background: #000;
+      display: none;
+      pointer-events: none;
+    }
+    .cursor {
+      position: absolute;
+      z-index: 3;
+      left: 15.0%;
+      top: 59.7%;
+      width: 3.6%;
+      height: 4.2%;
+      pointer-events: none;
+      transition: top 90ms steps(2, end);
+      filter: drop-shadow(0 0 2px #fff);
+    }
+    .cursor svg { width: 100%; height: 100%; display: block; }
+    .hit-area {
+      position: absolute;
+      z-index: 4;
+      left: 22%;
+      width: 65%;
+      height: 8%;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      cursor: pointer;
+      color: transparent;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #game-start { top: 58.5%; }
+    #password { top: 66.2%; }
+    .hit-area:focus-visible {
+      outline: 1px dashed #fff;
+      outline-offset: -2px;
+      background: #ffffff0b;
+    }
+    .screen-status {
+      min-height: 1.2em;
+      color: #9c91a7;
+      text-align: center;
+      font-size: clamp(10px, 1.6vw, 13px);
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity .15s ease;
+    }
+    .screen-status.visible { opacity: 1; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    @media (max-width: 520px) {
+      .cabinet { width: min(94vw, calc(74svh * 4 / 3)); gap: 12px; }
+      .screen-frame { box-shadow: 0 0 0 3px #111, 0 0 0 5px #29232e, 0 10px 35px #000; }
+      .cursor { filter: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cursor, .screen-status { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="cabinet" aria-label="Bucky O'Hare NES başlık ekranı">
+    <section class="screen-frame" aria-label="Oyun ekranı">
+      <img
+        id="original-screen"
+        src="https://www.neshq.com/games/b/bucky/800x600-title.gif"
+        alt="Bucky O'Hare NES orijinal başlık ekranı"
+        referrerpolicy="no-referrer"
+        draggable="false"
+      >
+      <canvas id="fallback-screen" width="256" height="192" aria-hidden="true"></canvas>
+
+      <div class="cursor-mask" id="cursor-mask" aria-hidden="true"></div>
+      <div class="cursor" id="cursor" aria-hidden="true">
+        <svg viewBox="0 0 16 16" shape-rendering="crispEdges" focusable="false">
+          <path fill="#fff" d="M6 0h4v3h2v3h4v4h-4v3h-2v3H6v-3H4v-3H0V6h4V3h2z"/>
+        </svg>
+      </div>
+
+      <button class="hit-area" id="game-start" type="button" aria-label="Game Start"></button>
+      <button class="hit-area" id="password" type="button" aria-label="Pass Word"></button>
+    </section>
+    <div class="screen-status" id="status" role="status" aria-live="polite"></div>
+    <p class="sr-only">Yukarı ve aşağı ok tuşlarıyla seçim yap. Enter ile onayla.</p>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const image = document.getElementById("original-screen");
+      const fallback = document.getElementById("fallback-screen");
+      const cursor = document.getElementById("cursor");
+      const mask = document.getElementById("cursor-mask");
+      const status = document.getElementById("status");
+      const startButton = document.getElementById("game-start");
+      const passwordButton = document.getElementById("password");
+      let selected = 0;
+
+      function drawFallback() {
+        const ctx = fallback.getContext("2d");
+        if (!ctx) return;
+        ctx.imageSmoothingEnabled = false;
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, 256, 192);
+
+        // KONAMI wordmark-style opening treatment, drawn as a local fallback only.
+        ctx.fillStyle = "#ef5429";
+        ctx.fillRect(61, 14, 10, 3);
+        ctx.fillRect(57, 18, 13, 3);
+        ctx.fillStyle = "#f5a12b";
+        ctx.fillRect(59, 22, 11, 2);
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold italic 12px Arial, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText("KONAMI", 75, 28);
+        ctx.font = "6px monospace";
+        ctx.fillText("®", 123, 20);
+
+        // Winged title mark.
+        for (let i = 0; i < 4; i++) {
+          const y = 54 + i * 5;
+          ctx.fillStyle = i % 2 ? "#8c1ac3" : "#cf20d6";
+          ctx.fillRect(19 + i * 3, y, 59 - i * 4, 3);
+          ctx.fillRect(178 + i * 4, y, 59 - i * 4, 3);
+          ctx.fillStyle = "#f5a21b";
+          ctx.fillRect(24 + i * 3, y + 1, 48 - i * 4, 1);
+          ctx.fillRect(184 + i * 4, y + 1, 48 - i * 4, 1);
+        }
+        ctx.textAlign = "center";
+        ctx.font = "bold italic 26px Arial, sans-serif";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = "#6d12a8";
+        ctx.strokeText("BUCKY", 128, 76);
+        ctx.strokeText("O'HARE", 128, 99);
+        ctx.fillStyle = "#f5a21b";
+        ctx.fillText("BUCKY", 128, 76);
+        ctx.fillText("O'HARE", 128, 99);
+
+        ctx.textAlign = "left";
+        ctx.font = "bold 12px monospace";
+        ctx.fillStyle = "#fff";
+        ctx.fillText("GAME START", 65, 130);
+        ctx.fillText("PASS WORD  -----", 65, 148);
+        ctx.font = "bold 10px monospace";
+        ctx.fillText("© 1992 KONAMI CO., LTD.", 37, 171);
+        ctx.fillText("LICENSED BY NINTENDO", 49, 185);
+      }
+
+      function renderSelection() {
+        cursor.style.top = selected === 0 ? "59.7%" : "67.4%";
+        mask.style.display = selected === 0 ? "none" : "block";
+        status.classList.remove("visible");
+        status.textContent = "";
+      }
+
+      function moveSelection(direction) {
+        selected = (selected + direction + 2) % 2;
+        renderSelection();
+      }
+
+      function choose() {
+        status.textContent = selected === 0
+          ? "GAME START — OYUN BÖLÜMÜ SIRADAKİ AŞAMADA"
+          : "PASS WORD — PAROLA GİRİŞİ SIRADAKİ AŞAMADA";
+        status.classList.add("visible");
+      }
+
+      function selectOrChoose(index) {
+        if (selected !== index) {
+          selected = index;
+          renderSelection();
+        } else {
+          choose();
+        }
+      }
+
+      image.addEventListener("error", () => {
+        image.style.display = "none";
+        fallback.style.display = "block";
+        drawFallback();
+      }, { once: true });
+
+      startButton.addEventListener("click", () => selectOrChoose(0));
+      passwordButton.addEventListener("click", () => selectOrChoose(1));
+
+      window.addEventListener("keydown", event => {
+        if (["ArrowUp", "ArrowDown", "Enter", " "].includes(event.key)) {
+          event.preventDefault();
+        }
+        if (event.key === "ArrowUp" || event.key.toLowerCase() === "w") {
+          moveSelection(-1);
+        } else if (event.key === "ArrowDown" || event.key.toLowerCase() === "s") {
+          moveSelection(1);
+        } else if (event.key === "Enter" || event.key === " ") {
+          choose();
+        } else if (event.key === "Escape") {
+          renderSelection();
+        }
+      });
+
+      renderSelection();
+    })();
+  </script>
+</body>
+</html>
