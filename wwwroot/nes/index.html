@@ -40,20 +40,7 @@
         0 0 60px #7d22b52b;
       isolation: isolate;
     }
-    .screen-frame::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 5;
-      pointer-events: none;
-      opacity: .16;
-      background: repeating-linear-gradient(
-        to bottom,
-        transparent 0,
-        transparent 3px,
-        #000 4px
-      );
-    }
+    .screen-frame::after { display: none; }
     #original-screen, #fallback-screen {
       position: absolute;
       inset: 0;
